@@ -1,0 +1,26 @@
+<div class="well bs-component">
+<div class="card">
+    <div class="card-body">
+        <h4 class="card-title">{{ mentor.username }}</h4>
+        <p>
+            Уровень доступа: {{ mentor.access.name }}
+        </p>
+        {% if mentor.access.name in ['Наставник', 'Главный наставник'] %}
+        <p>
+            Предмет: {{ mentor.discipline.name}}
+        </p>
+        {% if mentor.groups %}
+        <ul class="list-group list-group-flush">
+            {% for group in mentor.groups %}
+            <li class="list-group-item">
+                <a href="{{ url_for('main.group', name=group.name) }}">
+                    {{ group.name }}
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endif %}<a href="#" class="card-link">Профиль</a>
+    </div>
+</div>
+</div>

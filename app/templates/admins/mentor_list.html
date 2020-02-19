@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+
+{% block app_content %}
+
+
+<div class="well bs-component">
+    {{ wtf.quick_form(form) }}
+</div>
+
+<ul>
+{% for mentor in mentors %}
+    <li>
+        {% include 'admins/_mentor.html' %}
+    </li>
+{% endfor %}
+</ul>
+    {% endblock %}
