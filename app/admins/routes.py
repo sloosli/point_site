@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for, request, abort, g
+from flask import render_template, flash, redirect, url_for, request, abort, g, get_template_attribute
 from flask_login import current_user, login_required
 from app import app, db
 from app.models import Mentor, AccessLevel, Discipline
@@ -58,6 +58,7 @@ def mentor_list():
     g.url_for = 'admins.mentor_list'
 
     return render_template('data_list.html', form=form,
+                           render_header=get_template_attribute('_mentor.html', 'render'),
                            data=data, title='Список менторов')
 
 

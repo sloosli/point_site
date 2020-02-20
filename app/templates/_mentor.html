@@ -1,6 +1,7 @@
 
 {% macro render(mentor) %}
 
+<div class="col-xs-6 col-md-3 ">
 <div class="well bs-component">
 <div class="card">
     <div class="card-body">
@@ -27,6 +28,7 @@
         {% endif %}
         <a href="{{ url_for('admins.mentor', username=mentor.username) }}" class="card-link">Профиль</a>
     </div>
+</div>
 </div>
 </div>
 

@@ -7,6 +7,7 @@ class Access:
     HAWK = 3
     ANGEL = 4
     ADMIN = 5
+    SUPER_ADMIN = 6
 
 
 class Nav:
@@ -25,5 +26,6 @@ navs = {
     Access.UP_MENTOR: [groups],
     Access.HAWK: [students],
     Access.ANGEL: [groups, students],
-    Access.ADMIN: [my_profile, groups, students, mentors]
+    Access.ADMIN: [groups, students, mentors, my_profile],
+    Access.SUPER_ADMIN: [groups, students, mentors, my_profile],
 }

@@ -11,3 +11,4 @@ class Config(object):
 
     GROUPS_PER_PAGE = 10
     MENTORS_PER_PAGE = 10
+    STUDENTS_PER_PAGE = 20

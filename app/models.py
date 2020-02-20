@@ -4,7 +4,6 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login
 
-
 group_mentors = db.Table(
     'group_mentors',
     db.Column('group_id', db.Integer, db.ForeignKey('group.id')),
@@ -41,20 +40,6 @@ class Mentor(UserMixin, db.Model):
     def to_html(self):
         render = get_template_attribute('_mentor.html', 'render')
         return render(self)
-
-    def change_from_from(self, form, current_access, current_id):
-        self.username = form.username.data
-        self.first_name = form.first_name.data
-        self.last_name = form.last_name.data
-        if form.password.data:
-            self.set_password(form.password.data)
-
-        if form.access_levels.data < current_access and \
-                self.id != current_id:
-            self.access_level = form.access_levels.data
-
-        if form.access_levels.data in [Access.MENTOR, Access.UP_MENTOR]:
-            self.discipline_id = form.disciplines.data
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -98,6 +83,16 @@ class Student(db.Model):
                              secondary=group_students,
                              backref='students',
                              lazy='dynamic')
+
+    def to_html(self):
+        render = get_template_attribute('_student.html', 'render')
+        return render(self)
+
+    def total_points(self):
+        if self.discipline_records or self.refer_records:
+            return sum(map(lambda x: x.amount, self.discipline_records)) + \
+                   sum(map(lambda x: x.amount, self.refer_records))
+        return 0
 
     def is_in_group(self, group):
         return self.groups.filter_by(id=group.id).count() > 0

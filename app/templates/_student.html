@@ -1,0 +1,21 @@
+{% macro render(student) %}
+<div class="col-xs-6 col-md-3 ">
+    <div class="well bs-component">
+        <div class="card">
+            <div class="card-body">
+                <a href="{{ url_for('main.student', student_id=student.id) }}">
+                    <h4>{{ student.first_name }} {{ student.last_name }}</h4>
+                </a>
+                <p>
+                    <a href="https://vk.com/id{{ student.vk_id }}">
+                        <h4>Вконтакте</h4>
+                    </a>
+                </p>
+                <p>
+                    Количество баллов: {{ student.total_points() }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

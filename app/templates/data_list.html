@@ -11,15 +11,12 @@
     </form>
 </div>
 {% endif %}
-
 {% if data %}
-    <ul>
+    <div class="row">
         {% for something in data.items %}
-        <li>
             {{ something.to_html() }}
-        </li>
         {% endfor %}
-    </ul>
+    </div>
     <!-- Секция навигации-->
     <nav aria-label="Page navigation example">
         <ul class="pagination justify-content-center">

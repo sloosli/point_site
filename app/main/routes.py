@@ -1,7 +1,7 @@
-from flask import render_template, flash, redirect, url_for, g
+from flask import render_template, flash, redirect, url_for, g, request
 from flask_login import current_user, login_required
-from app import db
-from app.models import Mentor
+from app import app, db
+from app.models import Student
 from app.main import bp
 from app.constants import Access, navs
 
@@ -26,7 +26,16 @@ def index():
 def group_list():
     if current_user.access_level == Access.HAWK:
         return redirect(url_for('main.student_list'))
-    return render_template('data_list.html', title='Группы')
+    return 'pass'
+'''
+    page = request.args.get('page', 1, type=int)
+    students = Student.query.order_by(
+        Student.last_name, Student.first_name
+    ).paginate(
+        page, app.config['STUDENTS_PER_PAGE'], False
+    )
+    g.url_for = 'main.student_list'
+    return render_template('data_list.html', title='Студенты', data=students)'''
 
 
 @bp.route('/student_list', methods=['GET', 'POST'])
@@ -34,7 +43,15 @@ def group_list():
 def student_list():
     if current_user.access_level in [Access.MENTOR, Access.UP_MENTOR]:
         return redirect(url_for('main.group_list'))
-    return render_template('data_list.html', title='Студенты')
+
+    page = request.args.get('page', 1, type=int)
+    students = Student.query.order_by(
+        Student.last_name, Student.first_name
+    ).paginate(
+        page, app.config['STUDENTS_PER_PAGE'], False
+    )
+    g.url_for = 'main.student_list'
+    return render_template('data_list.html', title='Студенты', data=students)
 
 
 @bp.route('/student/<student_id>', methods=['GET', 'POST'])
