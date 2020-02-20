@@ -1,0 +1,6 @@
+{{ form.hidden_tag() }}
+{% for item in form %}
+    {% if not item.flags.not_need and item.name != 'csrf_token'%}
+        {{ wtf.form_field(item)}}
+    {% endif %}
+{% endfor %}

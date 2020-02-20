@@ -1,7 +1,8 @@
 from datetime import datetime
-from app import db, login
+from flask import get_template_attribute
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
+from app import db, login
 
 
 group_mentors = db.Table(
@@ -20,6 +21,8 @@ group_students = db.Table(
 class Mentor(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
+    first_name = db.Column(db.String(32))
+    last_name = db.Column(db.String(32))
     password_hash = db.Column(db.String(128))
 
     access_level = db.Column(db.Integer, db.ForeignKey('access_level.id'))
@@ -34,6 +37,24 @@ class Mentor(UserMixin, db.Model):
 
     def __repr__(self):
         return '<User> %s' % self.username
+
+    def to_html(self):
+        render = get_template_attribute('_mentor.html', 'render')
+        return render(self)
+
+    def change_from_from(self, form, current_access, current_id):
+        self.username = form.username.data
+        self.first_name = form.first_name.data
+        self.last_name = form.last_name.data
+        if form.password.data:
+            self.set_password(form.password.data)
+
+        if form.access_levels.data < current_access and \
+                self.id != current_id:
+            self.access_level = form.access_levels.data
+
+        if form.access_levels.data in [Access.MENTOR, Access.UP_MENTOR]:
+            self.discipline_id = form.disciplines.data
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -60,15 +81,15 @@ def mentor_user(id):
 
 class AccessLevel(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(50), nullable=False, server_default=u'', unique=True)  # for @roles_accepted()
-    label = db.Column(db.Unicode(255), server_default=u'')
+    name = db.Column(db.String(50), nullable=False, server_default=u'', unique=True)
 
     mentors = db.relationship('Mentor', backref='access', lazy='dynamic')
 
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(32))
+    first_name = db.Column(db.String(32))
+    last_name = db.Column(db.String(32))
     vk_id = db.Column(db.Integer, unique=True)
 
     discipline_records = db.relationship('DisciplinePointRecord', backref='student', lazy='dynamic')

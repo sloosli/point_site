@@ -18,11 +18,12 @@ class Nav:
 students = Nav('Студенты', 'main.student_list')
 groups = Nav('Группы', 'main.group_list')
 mentors = Nav('Менторы', 'admins.mentor_list')
+my_profile = Nav('Мой профиль', 'admins.self_mentor')
 
 navs = {
     Access.MENTOR: [groups],
     Access.UP_MENTOR: [groups],
     Access.HAWK: [students],
     Access.ANGEL: [groups, students],
-    Access.ADMIN: [groups, students, mentors]
+    Access.ADMIN: [my_profile, groups, students, mentors]
 }

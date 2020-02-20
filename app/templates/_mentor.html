@@ -1,7 +1,11 @@
+
+{% macro render(mentor) %}
+
 <div class="well bs-component">
 <div class="card">
     <div class="card-body">
         <h4 class="card-title">{{ mentor.username }}</h4>
+        <h5 class="card-title">{{ mentor.first_name }} {{ mentor.last_name }}</h5>
         <p>
             Уровень доступа: {{ mentor.access.name }}
         </p>
@@ -20,7 +24,10 @@
             {% endfor %}
         </ul>
         {% endif %}
-        {% endif %}<a href="#" class="card-link">Профиль</a>
+        {% endif %}
+        <a href="{{ url_for('admins.mentor', username=mentor.username) }}" class="card-link">Профиль</a>
     </div>
 </div>
 </div>
+
+{% endmacro %}

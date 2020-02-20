@@ -1,27 +1,61 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import ValidationError, DataRequired, EqualTo
-from app.models import Mentor
+from app.models import Mentor, AccessLevel, Discipline
 from app.constants import Access
 
 
 class MentorForm(FlaskForm):
-    username = StringField('Имя пользователя', validators=[DataRequired()])
+    first_name = StringField('Имя', validators=[DataRequired()])
+    last_name = StringField('Фамилия', validators=[DataRequired()])
+    username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Пароль', validators=[DataRequired()])
     password2 = PasswordField('Повторите пароль', validators=[DataRequired(),
                                                               EqualTo('password')])
     access_levels = SelectField('Уровень доступа', validators=[DataRequired()], coerce=int)
     disciplines = SelectField('Предмет', coerce=int)
-
     submit = SubmitField('Добавить')
 
+    def __init__(self, current_access=0, original_username='', *args, **kwargs):
+        super(MentorForm, self).__init__(*args, **kwargs)
+
+        self.original_username = original_username
+        self.access_levels.choices = [(t.id, t.name)
+                                      for t in AccessLevel.query.filter(
+                AccessLevel.id < current_access
+            ).order_by(AccessLevel.id).all()]
+        self.disciplines.choices = [(t.id, t.name)
+                                    for t in Discipline.query.order_by(Discipline.name).all()]
 
     def validate_username(self, username):
-        user = Mentor.query.filter_by(username=username.data).first()
-        if user is not None:
-            raise ValidationError('Пожалуйста выберите другое имя пользователя')
+        if username.data != self.original_username:
+            user = Mentor.query.filter_by(username=username.data).first()
+            if user is not None:
+                raise ValidationError('Пожалуйста выберите другое имя пользователя')
 
     def validate_disciplines(self, disciplines):
         if self.access_levels.data in [Access.MENTOR, Access.UP_MENTOR] and \
            disciplines.data is None:
             raise ValidationError('Пожалуйста, укажите предмет для наставника')
+
+
+class ChangeMentorForm(MentorForm):
+    password = PasswordField('Новый пароль')
+    password2 = PasswordField('Повторите пароль', validators=[EqualTo('password')])
+    submit = SubmitField('Изменить')
+
+    def __init__(self, current_access, user, *args, **kwargs):
+        kwargs['first_name'] = user.first_name or 'Имя'
+        kwargs['last_name'] = user.last_name or 'Фамилия'
+        kwargs['username'] = user.username
+        kwargs['access_levels'] = user.access_level
+        kwargs['disciplines'] = user.discipline.id if user.discipline else None
+
+        super(ChangeMentorForm, self).__init__(current_access=current_access,
+                                               original_username=user.username,
+                                               *args, **kwargs)
+        self.password.label.text = 'Новый пароль'
+        self.submit.label.text = 'Изменить'
+
+
+

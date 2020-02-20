@@ -26,7 +26,7 @@ def index():
 def group_list():
     if current_user.access_level == Access.HAWK:
         return redirect(url_for('main.student_list'))
-    return render_template('base.html', title='Группы')
+    return render_template('data_list.html', title='Группы')
 
 
 @bp.route('/student_list', methods=['GET', 'POST'])
@@ -34,7 +34,7 @@ def group_list():
 def student_list():
     if current_user.access_level in [Access.MENTOR, Access.UP_MENTOR]:
         return redirect(url_for('main.group_list'))
-    return render_template('base.html', title='Студенты')
+    return render_template('data_list.html', title='Студенты')
 
 
 @bp.route('/student/<student_id>', methods=['GET', 'POST'])
