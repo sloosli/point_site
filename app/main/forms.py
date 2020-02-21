@@ -1,8 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, SubmitField
-from wtforms.validators import ValidationError, DataRequired, EqualTo
-from app.models import Student
-from app.constants import Access
+from wtforms import StringField, IntegerField, SubmitField, SelectField
+from wtforms.validators import ValidationError, DataRequired
+from app.models import Student, Group, Discipline
 
 
 class StudentForm(FlaskForm):
@@ -34,3 +33,19 @@ class ChangeStudentForm(StudentForm):
         super(ChangeStudentForm, self).__init__(original_vk_id=student.vk_id,
                                                 *args, **kwargs)
         self.submit.label.text = 'Изменить'
+
+
+class GroupForm(FlaskForm):
+    name = StringField('Название', validators=[DataRequired()])
+    disciplines = SelectField('Предмет', coerce=int)
+    submit = SubmitField('Добавить')
+
+    def __init__(self, *args, **kwargs):
+        super(GroupForm, self).__init__(*args, **kwargs)
+        self.disciplines.choices = [(t.id, t.name)
+                                    for t in Discipline.query.order_by(Discipline.name).all()]
+
+    def validate_name(self, name):
+        group = Group.query.filter_by(name=name.data).first()
+        if group is not None:
+            raise ValidationError('Группа с таким названием уже существует')

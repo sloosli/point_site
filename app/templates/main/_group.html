@@ -1,0 +1,40 @@
+{% macro render(group) %}
+<div class="col-xs-6 col-md-6">
+    <div class="well bs-component">
+        <div class="card">
+            <div class="card-body">
+                <h4>
+                    {{ group.name }}
+                </h4>
+                <h5>
+                    Предмет: {{ group.discipline.name }}
+                </h5>
+                {% if group.students %}
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Имя</th>
+                        <th>Вконтакте</th>
+                        <th>Баллы</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for student in group.students %}
+                    <tr>
+                        <td><a href="{{ url_for('main.student', student_id=student.id) }}">
+                            {{ student.username }}
+                        </a></td>
+                        <td><a href="https://vk.com/id{{ student.vk_id }}">
+                            vk.com/id{{ student.vk_id }}
+                        </a></td>
+                        <td>{{ student.total_points() }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

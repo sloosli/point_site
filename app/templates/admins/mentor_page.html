@@ -39,6 +39,14 @@
         </div>
     </div>
 {% endif %}
-
+{% if mentor.access.name in ['Наставник', 'Главный наставник'] %}
+    {% if mentor.groups %}
+        <div class="row">
+            {% for group in mentor.groups %}
+                {{ group.to_html() }}
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endif %}
 
 {% endblock %}

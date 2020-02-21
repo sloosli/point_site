@@ -5,7 +5,10 @@
 <div class="well bs-component">
 <div class="card">
     <div class="card-body">
-        <h4 class="card-title">{{ mentor.last_name }} {{ mentor.first_name }}</h4>
+        <h4 class="card-title">
+            <a href="{{ url_for('admins.mentor', username=mentor.username) }}" >
+                {{ mentor.last_name }} {{ mentor.first_name }}</a>
+        </h4>
         <h5 class="card-title">{{ mentor.username }}</h5>
         <p>
             Уровень доступа: {{ mentor.access.name }}
@@ -14,19 +17,7 @@
         <p>
             Предмет: {{ mentor.discipline.name}}
         </p>
-        {% if mentor.groups %}
-        <ul class="list-group list-group-flush">
-            {% for group in mentor.groups %}
-            <li class="list-group-item">
-                <a href="{{ url_for('main.group', name=group.name) }}">
-                    {{ group.name }}
-                </a>
-            </li>
-            {% endfor %}
-        </ul>
         {% endif %}
-        {% endif %}
-        <a href="{{ url_for('admins.mentor', username=mentor.username) }}" class="card-link">Профиль</a>
     </div>
 </div>
 </div>

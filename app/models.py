@@ -112,9 +112,13 @@ class Student(db.Model):
 
 class Group(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(32))
+    name = db.Column(db.String(32), unique=True)
 
     discipline_id = db.Column(db.Integer, db.ForeignKey('discipline.id'))
+
+    def to_html(self):
+        render = get_template_attribute('main/_group.html', 'render')
+        return render(self)
 
 
 class Discipline(db.Model):

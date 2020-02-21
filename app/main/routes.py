@@ -1,9 +1,9 @@
 from flask import render_template, flash, redirect, url_for, g, request
 from flask_login import current_user, login_required
 from app import app, db
-from app.models import Student
+from app.models import Student, Group
 from app.main import bp
-from app.main.forms import StudentForm, ChangeStudentForm
+from app.main.forms import StudentForm, ChangeStudentForm, GroupForm
 from app.constants import Access, navs
 
 
@@ -32,16 +32,29 @@ def index():
 def group_list():
     if current_user.access_level == Access.HAWK:
         return redirect(url_for('main.student_list'))
-    return 'pass'
-'''
+
     page = request.args.get('page', 1, type=int)
-    students = Student.query.order_by(
-        Student.last_name, Student.first_name
+    form = None
+    if current_user.access_level in [Access.ADMIN, Access.SUPER_ADMIN]:
+        form = GroupForm()
+        if form.validate_on_submit():
+            # noinspection PyArgumentList
+            new_group = Group(name=form.name.data, discipline_id=form.disciplines.data)
+
+            db.session.add(new_group)
+            db.session.commit()
+            flash('Группа %s добавлена' % new_group.name)
+            return redirect(url_for('main.group_list', page=page))
+
+    groups = Group.query.order_by(
+        Group.name
     ).paginate(
-        page, app.config['STUDENTS_PER_PAGE'], False
+        page, app.config['GROUPS_PER_PAGE'], False
     )
-    g.url_for = 'main.student_list'
-    return render_template('data_list.html', title='Студенты', data=students)'''
+    g.url_for = 'main.group_list'
+
+    return render_template('data_list.html', form=form,
+                           title='Список групп', data=groups)
 
 
 @bp.route('/student_list', methods=['GET', 'POST'])
@@ -73,7 +86,7 @@ def student_list():
     )
     g.url_for = 'main.student_list'
     return render_template('data_list.html', form=form,
-                           title='Студенты', data=students)
+                           title='Список студентов', data=students)
 
 
 @bp.route('/student/<student_id>', methods=['GET', 'POST'])
@@ -100,7 +113,7 @@ def student(student_id):
 
 @bp.route('/student/remove/<student_id>')
 def remove_student(student_id):
-    if not current_user.access_level in [Access.SUPER_ADMIN, Access.ADMIN]:
+    if current_user.access_level not in [Access.SUPER_ADMIN, Access.ADMIN]:
         redirect(url_for('main.index'))
 
     user = get_user(student_id)
