@@ -1,0 +1,14 @@
+{% macro render(discipline) %}
+
+<div class="col-xs-12 col-md-12 ">
+<div class="well bs-component">
+    <div class="card">
+        <h4 class="card-title">
+            <a href="{{ url_for('admins.discipline', discipline_id=discipline.id) }}">
+                {{ discipline.name }}</a>
+        </h4>
+    </div>
+</div>
+</div>
+
+{% endmacro %}

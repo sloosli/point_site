@@ -1,9 +1,10 @@
-from flask import render_template, flash, redirect, url_for, request, abort, g, get_template_attribute
+from functools import wraps
+from flask import render_template, flash, redirect, url_for, request, abort, g
 from flask_login import current_user, login_required
 from app import app, db
-from app.models import Mentor, AccessLevel, Discipline
+from app.models import Mentor, AccessLevel, Discipline, Theme
 from app.admins import bp
-from app.admins.forms import MentorForm, ChangeMentorForm
+from app.admins.forms import MentorForm, ChangeMentorForm, DisciplineForm, ThemeForm
 from app.constants import Access
 
 
@@ -18,16 +19,19 @@ def get_user(username):
     return user
 
 
-@bp.before_request
-def before_request():
-    if current_user.is_authenticated and \
-            current_user.access_level < Access.ADMIN:
-        return redirect(url_for('main.index'))
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user is None or current_user.is_anonymous or \
+                current_user.access_level not in [Access.ADMIN, Access.SUPER_ADMIN]:
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/mentor_list', methods=['GET', 'POST'])
-@login_required
+@admin_required
 def mentor_list():
     form = MentorForm(current_user.access_level)
     page = request.args.get('page', 1, type=int)
@@ -62,13 +66,13 @@ def mentor_list():
 
 
 @bp.route('/mentor', methods=['GET', 'POST'])
-@login_required
+@admin_required
 def self_mentor():
     return redirect(url_for('admins.mentor', username=current_user.username))
 
 
 @bp.route('/mentor/<username>', methods=['GET', 'POST'])
-@login_required
+@admin_required
 def mentor(username):
     user = get_user(username)
     form = ChangeMentorForm(current_access=current_user.access_level,
@@ -102,6 +106,7 @@ def mentor(username):
 
 
 @bp.route('/mentor/remove/<username>')
+@admin_required
 def remove_mentor(username):
     user = get_user(username)
 
@@ -110,3 +115,60 @@ def remove_mentor(username):
         db.session.commit()
 
     return redirect(url_for('admins.mentor_list'))
+
+
+@bp.route('/discipline_list', methods=['GET', 'POST'])
+def discipline_list():
+
+    form = DisciplineForm()
+    if form.validate_on_submit():
+        # noinspection PyArgumentList
+        new_discipline = Discipline(name=form.name.data)
+
+        db.session.add(new_discipline)
+        db.session.commit()
+        flash('Предмет %s добавлен' % new_discipline.name)
+        return redirect(url_for('admins.discipline_list'))
+
+    data = Discipline.query.order_by(Discipline.name).paginate(1, 10, False)
+    g.url_for = 'admins.discipline_list'
+
+    return render_template('data_list.html', form=form,
+                           data=data, title='Список предметов')
+
+
+@bp.route('/discipline/<discipline_id>', methods=['GET', 'POST'])
+@admin_required
+def discipline(discipline_id):
+
+    current_discipline = Discipline.query.filter_by(id=discipline_id).first_or_404()
+    form = ThemeForm(current_discipline.id)
+
+    if form.validate_on_submit():
+        new_theme = Theme(name=form.name.data,
+                          discipline_id=form.discipline.id,
+                          max_points=form.max_points.data)
+        db.session.add(new_theme)
+        db.session.commit()
+
+        flash("Тема %s добавлена" % new_theme.name)
+
+        return redirect(url_for('admins.discipline', discipline_id=discipline_id))
+
+    return render_template('admins/discipline_page.html', form=form,
+                           discipline=current_discipline, title=current_discipline.name)
+
+
+@bp.route('/discipline/remove/<discipline_id>')
+@admin_required
+def remove_discipline(discipline_id):
+    discipline = Discipline.query.filter_by(id=discipline_id).first_or_404()
+
+    if discipline.themes.count() > 0:
+        flash('Во избежаение проблем удаление заблокировано пока у предмета существуют темы')
+        return redirect(url_for('admins.discipline', discipline_id=discipline_id))
+
+    db.session.delete(discipline)
+    db.session.commit()
+
+    return redirect(url_for('admins.discipline_list'))

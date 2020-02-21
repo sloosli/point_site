@@ -9,6 +9,6 @@ class Config(object):
                               'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    GROUPS_PER_PAGE = 10
+    GROUPS_PER_PAGE = 5
     MENTORS_PER_PAGE = 12
     STUDENTS_PER_PAGE = 12

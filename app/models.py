@@ -4,6 +4,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login
 
+
 group_mentors = db.Table(
     'group_mentors',
     db.Column('group_id', db.Integer, db.ForeignKey('group.id')),
@@ -31,7 +32,7 @@ class Mentor(UserMixin, db.Model):
     refer_records = db.relationship('ReferPointRecord', backref='mentor', lazy='dynamic')
     groups = db.relationship('Group',
                              secondary=group_mentors,
-                             backref='mentors',
+                             backref=db.backref('mentors', lazy='dynamic'),
                              lazy='dynamic')
 
     def __repr__(self):
@@ -81,7 +82,7 @@ class Student(db.Model):
     refer_records = db.relationship('ReferPointRecord', backref='student', lazy='dynamic')
     groups = db.relationship('Group',
                              secondary=group_students,
-                             backref='students',
+                             backref=db.backref('students', lazy='dynamic'),
                              lazy='dynamic')
 
     @property
@@ -127,6 +128,11 @@ class Discipline(db.Model):
 
     groups = db.relationship('Group', backref='discipline', lazy='dynamic')
     mentors = db.relationship('Mentor', backref='discipline', lazy='dynamic')
+    themes = db.relationship('Theme', backref='discipline', lazy='dynamic')
+
+    def to_html(self):
+        render = get_template_attribute('admins/_discipline.html', 'render')
+        return render(self)
 
 
 class Theme(db.Model):

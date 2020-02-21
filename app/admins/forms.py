@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField
+from wtforms import StringField, PasswordField, SubmitField, SelectField, IntegerField
 from wtforms.validators import ValidationError, DataRequired, EqualTo
-from app.models import Mentor, AccessLevel, Discipline
+from app.models import Mentor, AccessLevel, Discipline, Theme
 from app.constants import Access
 
 
@@ -58,4 +58,28 @@ class ChangeMentorForm(MentorForm):
         self.submit.label.text = 'Изменить'
 
 
+class DisciplineForm(FlaskForm):
+    name = StringField('Название', validators=[DataRequired()])
+    submit = SubmitField('Добавить')
 
+    def validate_name(self, name):
+        discipline = Discipline.query.filter_by(name=name.data).first()
+        if discipline is not None:
+            raise ValidationError('Такой предмет уже существует')
+
+
+class ThemeForm(FlaskForm):
+    name = StringField('Название', validators=[DataRequired()])
+    max_points = IntegerField('Максимальный балл', validators=[DataRequired])
+    submit = SubmitField('Добавить')
+
+    def __init__(self, discipline_id, *args, **kwargs):
+        super(ThemeForm, self).__init__(*args, **kwargs)
+        self.discipline_id = discipline_id
+
+    def validate_name(self, name):
+        theme = Theme.query.filter_by(
+            discipline_id=self.discipline_id
+        ).filter_by(name=name.data).first()
+        if theme is not None:
+            raise ValidationError('В этом предмете уже есть данная тема')
