@@ -13,7 +13,6 @@
             <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal">
                 Удалить
             </button>
-
         </form>
         <!-- Подтверждение -->
         <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
@@ -27,12 +26,12 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        Вы уверены, что хотите удалить {{ mentor.access.name }} - {{ mentor.username }}
+                        Вы уверены, что хотите удалить студента {{ student.username }}
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
                         <a class="btn btn-danger"
-                           href="{{ url_for('admins.remove_mentor', username=mentor.username) }}">Удалить</a>
+                           href="{{ url_for('main.remove_student', student_id=student.id) }}">Удалить</a>
                     </div>
                 </div>
             </div>

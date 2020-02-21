@@ -51,14 +51,13 @@ def mentor_list():
         # Администраторов может добавлять только главный администратор
         Mentor.access_level < current_user.access_level
     ).order_by(
-        Mentor.username
+        Mentor.access_level.desc(), Mentor.last_name, Mentor.first_name, Mentor.username
     ).paginate(
         page, app.config['MENTORS_PER_PAGE'], False
     )
     g.url_for = 'admins.mentor_list'
 
     return render_template('data_list.html', form=form,
-                           render_header=get_template_attribute('_mentor.html', 'render'),
                            data=data, title='Список менторов')
 
 
@@ -102,7 +101,7 @@ def mentor(username):
                            mentor=user, title=user.username)
 
 
-@bp.route('/mentor/remove_mentor/<username>')
+@bp.route('/mentor/remove/<username>')
 def remove_mentor(username):
     user = get_user(username)
 

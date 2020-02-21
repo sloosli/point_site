@@ -38,7 +38,7 @@ class Mentor(UserMixin, db.Model):
         return '<User> %s' % self.username
 
     def to_html(self):
-        render = get_template_attribute('_mentor.html', 'render')
+        render = get_template_attribute('admins/_mentor.html', 'render')
         return render(self)
 
     def set_password(self, password):
@@ -84,8 +84,12 @@ class Student(db.Model):
                              backref='students',
                              lazy='dynamic')
 
+    @property
+    def username(self):
+        return self.last_name + ' ' + self.first_name
+
     def to_html(self):
-        render = get_template_attribute('_student.html', 'render')
+        render = get_template_attribute('main/_student.html', 'render')
         return render(self)
 
     def total_points(self):
