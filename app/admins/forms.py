@@ -1,9 +1,8 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import ValidationError, DataRequired, EqualTo
-
 from app.constants import Access, access_desc
-from app.models import Mentor, Discipline
+from app.models import Mentor, Discipline, Group
 
 
 class MentorForm(FlaskForm):
@@ -56,3 +55,21 @@ class ChangeMentorForm(MentorForm):
                                                *args, **kwargs)
         self.password.label.text = 'Новый пароль'
         self.submit.label.text = 'Изменить'
+
+
+class GroupMentorForm(FlaskForm):
+    groups = SelectField('Группа', validators=[DataRequired()], coerce=int)
+    submit = SubmitField('Добавить')
+
+    def __init__(self, user, *args, **kwargs):
+        super(GroupMentorForm, self).__init__(*args, **kwargs)
+        group_ids = user.groups.with_entities(Group.id)
+        self.groups.choices = [(t.id, t.name) for t in
+                               Group.query.filter(
+                                   Group.id.notin_(group_ids)
+                               ).all()]
+
+    def validate_groups(self, groups):
+        group = Group.query.filter_by(id=groups.data).first()
+        if group is None:
+            raise ValidationError('Нет такой группы')

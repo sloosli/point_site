@@ -1,9 +1,9 @@
-from flask import render_template, flash, redirect, url_for, request, abort, g
+from flask import render_template, flash, redirect, url_for, request, g
 from flask_login import current_user
 from app import app, db
-from app.models import Mentor
+from app.models import Mentor, Group
 from app.admins import bp
-from app.admins.forms import MentorForm, ChangeMentorForm
+from app.admins.forms import MentorForm, ChangeMentorForm, GroupMentorForm
 from app.constants import Access
 from app.utils import get_mentor, admin_required
 
@@ -56,12 +56,21 @@ def mentor(username):
     user = get_mentor(username)
     form = ChangeMentorForm(current_access=current_user.access_level,
                             user=user)
+    group_form = None
+    if user.access_level == Access.MENTOR:
+        group_form = GroupMentorForm(user)
+
+    request_form = request.form
+
+    if not request_form.get('submit', None):
+        return render_template('admins/mentor_page.html', group_form=group_form,
+                               form=form, mentor=user, title=user.username)
 
     if user.id == current_user.id:
         form.access_levels.flags.not_need = True
         form.disciplines.flags.not_need = True
 
-    if form.validate_on_submit():
+    if request_form['submit'] == 'Изменить' and form.validate_on_submit():
         user.username = form.username.data
         user.first_name = form.first_name.data
         user.last_name = form.last_name.data
@@ -77,11 +86,19 @@ def mentor(username):
 
         db.session.commit()
         flash('%s %s Изменен' % (user.access, user.username))
+        return redirect(url_for('admins.mentor', username=user.username))
+
+    if request_form['submit'] == 'Добавить' and group_form.validate_on_submit():
+        current_group = Group.query.filter_by(id=group_form.groups.data).first()
+        user.add_group(current_group)
+        db.session.commit()
+
+        flash("Группа %s добавлена наставнику %s" % (current_group.name, user.username))
 
         return redirect(url_for('admins.mentor', username=user.username))
 
-    return render_template('admins/mentor_page.html', form=form,
-                           mentor=user, title=user.username)
+    return render_template('admins/mentor_page.html', group_form=group_form,
+                           form=form, mentor=user, title=user.username)
 
 
 @bp.route('/remove/<username>')

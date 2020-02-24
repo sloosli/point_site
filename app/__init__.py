@@ -29,4 +29,7 @@ app.register_blueprint(admins_bp, url_prefix='/mentor')
 from app.disciplines import bp as disciplines_bp
 app.register_blueprint(disciplines_bp, url_prefix='/discipline')
 
+from app.errors import bp as errors_bp
+app.register_blueprint(errors_bp)
+
 from app import models

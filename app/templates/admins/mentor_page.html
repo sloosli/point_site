@@ -9,7 +9,8 @@
 <div class="well bs-component">
     <form action="" method="post" class="form" role="form">
         {% include '_form.html' %}
-        {% if mentor.id != current_user.id %}
+
+    {% if mentor.id != current_user.id %}
         <!-- Триггер для всплывающего окна-->
         <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal">
             Удалить
@@ -39,21 +40,32 @@
         </div>
     </div>
     {% else %}
-    </div>
+    </form>
     {% endif %}
 </div>
 {% endif %}
-{% if mentor.access.name in ['Наставник', 'Главный наставник'] %}
-{% if mentor.groups %}
-<div class="row">
-    {% for group in mentor.groups %}
-    <div class="col-xs-12 col-md-12">
-        <div class="well bs-component">
-            <a href="{{ url_for('students.group', group_id=group.id) }}">{{ group.name }}</a>
-        </div>
+
+{% if group_form %}
+    <div class="well bs-component">
+        {{ wtf.quick_form(group_form) }}
     </div>
-    {% endfor %}
-</div>
+{% endif %}
+
+{% if mentor.access in ['Наставник', 'Главный наставник'] %}
+{% if mentor.groups.count() > 0 %}
+    <div class="well bs-component">
+        <h3>Группы: </h3>
+        <p></p>
+        <ul>
+        {% for group in mentor.groups %}
+            <li>
+                <a href="{{ url_for('main.group', group_id=group.id) }}">
+                    <h4>{{ group.name }}</h4>
+                </a>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
 {% endif %}
 {% endif %}
 
