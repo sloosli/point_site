@@ -11,7 +11,7 @@
                 <h5>
                     Предмет: {{ group.discipline.name }}
                 </h5>
-                {% if group.students %}
+                {% if group.students.count() > 0 %}
                 <table class="table table-striped">
                     <thead>
                     <tr>

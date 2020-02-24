@@ -3,6 +3,7 @@ from flask import get_template_attribute
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login
+from app.constants import access_desc
 
 
 group_mentors = db.Table(
@@ -24,8 +25,8 @@ class Mentor(UserMixin, db.Model):
     first_name = db.Column(db.String(32))
     last_name = db.Column(db.String(32))
     password_hash = db.Column(db.String(128))
+    access_level = db.Column(db.Integer)
 
-    access_level = db.Column(db.Integer, db.ForeignKey('access_level.id'))
     discipline_id = db.Column(db.Integer, db.ForeignKey('discipline.id'))
 
     discipline_records = db.relationship('DisciplinePointRecord', backref='mentor', lazy='dynamic')
@@ -34,6 +35,10 @@ class Mentor(UserMixin, db.Model):
                              secondary=group_mentors,
                              backref=db.backref('mentors', lazy='dynamic'),
                              lazy='dynamic')
+
+    @property
+    def access(self):
+        return access_desc[self.access_level]
 
     def __repr__(self):
         return '<User> %s' % self.username
@@ -63,13 +68,6 @@ class Mentor(UserMixin, db.Model):
 @login.user_loader
 def mentor_user(id):
     return Mentor.query.get(int(id))
-
-
-class AccessLevel(db.Model):
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(50), nullable=False, server_default=u'', unique=True)
-
-    mentors = db.relationship('Mentor', backref='access', lazy='dynamic')
 
 
 class Student(db.Model):
@@ -131,7 +129,7 @@ class Discipline(db.Model):
     themes = db.relationship('Theme', backref='discipline', lazy='dynamic')
 
     def to_html(self):
-        render = get_template_attribute('admins/_discipline.html', 'render')
+        render = get_template_attribute('disciplines/_discipline.html', 'render')
         return render(self)
 
 

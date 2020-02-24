@@ -1,5 +1,3 @@
-from flask import url_for
-
 
 class Access:
     MENTOR = 1
@@ -10,6 +8,16 @@ class Access:
     SUPER_ADMIN = 6
 
 
+access_desc = {
+    Access.MENTOR: 'Наставник',
+    Access.UP_MENTOR: 'Главный наставник',
+    Access.HAWK: 'Ястреб',
+    Access.ANGEL: 'Ангел',
+    Access.ADMIN: 'Администратор',
+    Access.SUPER_ADMIN: 'Главный администратор',
+}
+
+
 class Nav:
     def __init__(self, *args):
         self.name = args[0]
@@ -18,9 +26,9 @@ class Nav:
 
 students = Nav('Студенты', 'main.student_list')
 groups = Nav('Группы', 'main.group_list')
-mentors = Nav('Менторы', 'admins.mentor_list')
+mentors = Nav('Менторы', 'admins.index')
 my_profile = Nav('Мой профиль', 'admins.self_mentor')
-disciplines = Nav('Предметы', 'admins.discipline_list')
+disciplines = Nav('Предметы', 'disciplines.index')
 
 navs = {
     Access.MENTOR: [groups],

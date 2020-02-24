@@ -24,6 +24,9 @@ from app.main import bp as main_bp
 app.register_blueprint(main_bp)
 
 from app.admins import bp as admins_bp
-app.register_blueprint(admins_bp, url_prefix='/admins')
+app.register_blueprint(admins_bp, url_prefix='/mentor')
+
+from app.disciplines import bp as disciplines_bp
+app.register_blueprint(disciplines_bp, url_prefix='/discipline')
 
 from app import models

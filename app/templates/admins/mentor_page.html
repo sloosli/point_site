@@ -6,47 +6,55 @@
 
 
 {% if form %}
-    <div class="well bs-component">
-        <form action="" method="post" class="form" role="form">
-            {% include '_form.html' %}
-            <!-- Триггер для всплывающего окна-->
-            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal">
-                Удалить
-            </button>
+<div class="well bs-component">
+    <form action="" method="post" class="form" role="form">
+        {% include '_form.html' %}
+        {% if mentor.id != current_user.id %}
+        <!-- Триггер для всплывающего окна-->
+        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal">
+            Удалить
+        </button>
 
-        </form>
-        <!-- Подтверждение -->
-        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-             aria-hidden="true">
-            <div class="modal-dialog" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title" id="exampleModalLabel">Удаление</h4>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="modal-body">
-                        Вы уверены, что хотите удалить {{ mentor.access.name }} - {{ mentor.username }}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
-                        <a class="btn btn-danger"
-                           href="{{ url_for('admins.remove_mentor', username=mentor.username) }}">Удалить</a>
-                    </div>
+    </form>
+    <!-- Подтверждение -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="exampleModalLabel">Удаление</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Вы уверены, что хотите удалить {{ mentor.access.name }} - {{ mentor.username }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+                    <a class="btn btn-danger"
+                       href="{{ url_for('admins.remove_mentor', username=mentor.username) }}">Удалить</a>
                 </div>
             </div>
         </div>
     </div>
+    {% else %}
+    </div>
+    {% endif %}
+</div>
 {% endif %}
 {% if mentor.access.name in ['Наставник', 'Главный наставник'] %}
-    {% if mentor.groups %}
-        <div class="row">
-            {% for group in mentor.groups %}
-                {{ group.to_html() }}
-            {% endfor %}
+{% if mentor.groups %}
+<div class="row">
+    {% for group in mentor.groups %}
+    <div class="col-xs-12 col-md-12">
+        <div class="well bs-component">
+            <a href="{{ url_for('students.group', group_id=group.id) }}">{{ group.name }}</a>
         </div>
-    {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 {% endif %}
 
 {% endblock %}

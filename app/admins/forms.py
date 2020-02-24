@@ -1,8 +1,9 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, SelectField, IntegerField
+from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import ValidationError, DataRequired, EqualTo
-from app.models import Mentor, AccessLevel, Discipline, Theme
-from app.constants import Access
+
+from app.constants import Access, access_desc
+from app.models import Mentor, Discipline
 
 
 class MentorForm(FlaskForm):
@@ -20,10 +21,9 @@ class MentorForm(FlaskForm):
         super(MentorForm, self).__init__(*args, **kwargs)
 
         self.original_username = original_username
-        self.access_levels.choices = [(t.id, t.name)
-                                      for t in AccessLevel.query.filter(
-                AccessLevel.id < current_access
-            ).order_by(AccessLevel.id).all()]
+        self.access_levels.choices = sorted(filter(lambda x: x[0] < current_access,
+                                            access_desc.items()))
+
         self.disciplines.choices = [(t.id, t.name)
                                     for t in Discipline.query.order_by(Discipline.name).all()]
 
@@ -35,7 +35,7 @@ class MentorForm(FlaskForm):
 
     def validate_disciplines(self, disciplines):
         if self.access_levels.data in [Access.MENTOR, Access.UP_MENTOR] and \
-           disciplines.data is None:
+                disciplines.data is None:
             raise ValidationError('Пожалуйста, укажите предмет для наставника')
 
 
@@ -56,30 +56,3 @@ class ChangeMentorForm(MentorForm):
                                                *args, **kwargs)
         self.password.label.text = 'Новый пароль'
         self.submit.label.text = 'Изменить'
-
-
-class DisciplineForm(FlaskForm):
-    name = StringField('Название', validators=[DataRequired()])
-    submit = SubmitField('Добавить')
-
-    def validate_name(self, name):
-        discipline = Discipline.query.filter_by(name=name.data).first()
-        if discipline is not None:
-            raise ValidationError('Такой предмет уже существует')
-
-
-class ThemeForm(FlaskForm):
-    name = StringField('Название', validators=[DataRequired()])
-    max_points = IntegerField('Максимальный балл', validators=[DataRequired])
-    submit = SubmitField('Добавить')
-
-    def __init__(self, discipline_id, *args, **kwargs):
-        super(ThemeForm, self).__init__(*args, **kwargs)
-        self.discipline_id = discipline_id
-
-    def validate_name(self, name):
-        theme = Theme.query.filter_by(
-            discipline_id=self.discipline_id
-        ).filter_by(name=name.data).first()
-        if theme is not None:
-            raise ValidationError('В этом предмете уже есть данная тема')

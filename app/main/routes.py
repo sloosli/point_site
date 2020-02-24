@@ -6,17 +6,7 @@ from app.main import bp
 from app.main.forms import (StudentForm, ChangeStudentForm,
                             GroupForm, ChangeGroupForm, GroupStudentForm)
 from app.constants import Access, navs
-from app.admins.routes import admin_required
-
-
-def get_user(student_id):
-    user = Student.query.filter_by(id=student_id).first_or_404()
-    return user
-
-
-def get_group(group_id):
-    group = Group.query.filter_by(id=group_id).first_or_404()
-    return group
+from app.utils import admin_required, get_group, get_student, is_admin
 
 
 @bp.before_app_request
@@ -42,7 +32,7 @@ def group_list():
 
     page = request.args.get('page', 1, type=int)
     form = None
-    if current_user.access_level in [Access.ADMIN, Access.SUPER_ADMIN]:
+    if is_admin(current_user):
         form = GroupForm()
         if form.validate_on_submit():
             # noinspection PyArgumentList
@@ -80,7 +70,7 @@ def group(group_id):
         return redirect(url_for('main.index'))
 
     form = None
-    if current_user.access_level in [Access.ADMIN, Access.SUPER_ADMIN]:
+    if is_admin(current_user):
         form = ChangeGroupForm(current_group)
 
         if form.validate_on_submit():
@@ -115,7 +105,7 @@ def student_list():
 
     page = request.args.get('page', 1, type=int)
     form = None
-    if current_user.access_level in [Access.ADMIN, Access.SUPER_ADMIN]:
+    if is_admin(current_user):
         form = StudentForm()
         if form.validate_on_submit():
             # noinspection PyArgumentList
@@ -142,12 +132,12 @@ def student_list():
 @bp.route('/student/<student_id>', methods=['GET', 'POST'])
 @login_required
 def student(student_id):
-    user = get_user(student_id)
+    user = get_student(student_id)
     form = None
     group_form = None
     request_form = request.form
 
-    if current_user.access_level in [Access.ADMIN, Access.SUPER_ADMIN]:
+    if is_admin(current_user):
 
         form = ChangeStudentForm(user)
         group_form = GroupStudentForm(user)
@@ -183,7 +173,7 @@ def student(student_id):
 @login_required
 @admin_required
 def remove_student(student_id):
-    user = get_user(student_id)
+    user = get_student(student_id)
 
     db.session.delete(user)
     db.session.commit()

@@ -11,7 +11,7 @@
         </h4>
         <h5 class="card-title">{{ mentor.username }}</h5>
         <p>
-            Уровень доступа: {{ mentor.access.name }}
+            Уровень доступа: {{ mentor.access }}
         </p>
         {% if mentor.access.name in ['Наставник', 'Главный наставник'] %}
         <p>
