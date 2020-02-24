@@ -38,21 +38,22 @@
     {% if form %}
     <div class="well bs-component">
         <form action="" method="post" class="form" role="form">
+            <h4>Добавить тему</h4>
             {% include '_form.html' %}
         </form>
     </div>
     {% endif %}
     {% if discipline.themes.count() > 0 %}
-        <div class="well bs-component row">
-            <h3>Темы:</h3>
-            <ul>
+    <div class="well bs-component">
+        <h3>Темы:</h3>
+        <ul>
             {% for theme in discipline.themes %}
-                <li>
-                    <h4>{{ theme.name }} - макс. {{ theme.max_points }}</h4>
-                </li>
+            <li>
+                <h4>{{ theme.name }} - макс. {{ theme.max_points }}</h4>
+            </li>
             {% endfor %}
-            </ul>
-        </div>
+        </ul>
+    </div>
     {% endif %}
 </div>
 

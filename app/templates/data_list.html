@@ -26,6 +26,7 @@
     {% endfor %}
 </div>
 <!-- Секция навигации-->
+{% if data.page > 1 %}
 <nav aria-label="Page navigation example">
     <ul class="pagination justify-content-center">
         {% if data.page > 2 %}
@@ -63,5 +64,6 @@
         {% endif %}
     </ul>
 </nav>
+{% endif %}
 {% endif %}
 {% endblock %}

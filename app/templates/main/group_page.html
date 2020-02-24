@@ -7,6 +7,12 @@
 
 {% if form %}
     <div class="well bs-component">
+    <a class="btn btn-primary" role="button" data-toggle="collapse" href="#collapseForm" aria-expanded="false"
+       aria-controls="collapseForm">
+        Редактирование
+    </a>
+    <p></p>
+    <div class="collapse" id="collapseForm">
         <form action="" method="post" class="form" role="form">
             {% include '_form.html' %}
             <!-- Триггер для всплывающего окна-->
@@ -37,7 +43,47 @@
             </div>
         </div>
     </div>
+    </div>
 {% endif %}
 
+{% if group.mentors.count() > 0 %}
+    <div class="well bs-component">
+        <h3>Наставник:</h3>
+        {% for mentor in group.mentors %}
+        <a href="{{ url_for('admins.mentor', username=mentor.username)}}">
+            <h4>
+                {{ mentor.first_name }} {{ mentor.last_name }}
+            </h4>
+        </a>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% if group.students.count() > 0 %}
+<div class="well bs-component">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Имя</th>
+            <th>Вконтакте</th>
+            <th>Баллы</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for student in sorted(group.students, key=lambda x:x.last_name) %}
+        <tr>
+            <td><a href="{{ url_for('main.student', student_id=student.id) }}">
+                {{ student.username }}
+            </a></td>
+            <td><a href="https://vk.com/id{{ student.vk_id }}">
+                vk.com/id{{ student.vk_id }}
+            </a></td>
+            <td>{{ student.total_points() }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
 
 {% endblock %}

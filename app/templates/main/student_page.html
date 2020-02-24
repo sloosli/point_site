@@ -6,7 +6,13 @@
 
 
 {% if form %}
-    <div class="well bs-component">
+<div class="well bs-component">
+    <a class="btn btn-primary" role="button" data-toggle="collapse" href="#collapseForm" aria-expanded="false"
+       aria-controls="collapseForm">
+        Редактирование
+    </a>
+    <p></p>
+    <div class="collapse" id="collapseForm">
         <form action="" method="post" class="form" role="form">
             {% include '_form.html' %}
             <!-- Триггер для всплывающего окна-->
@@ -37,28 +43,29 @@
             </div>
         </div>
     </div>
+</div>
 {% endif %}
 
 {% if group_form %}
-    <div class="well bs-component">
-        {{ wtf.quick_form(group_form) }}
-    </div>
+<div class="well bs-component">
+    {{ wtf.quick_form(group_form) }}
+</div>
 {% endif %}
 
 {% if student.groups.count() > 0 %}
-    <div class="well bs-component">
-        <h3>Группы: </h3>
-        <p></p>
-        <ul>
+<div class="well bs-component">
+    <h3>Группы: </h3>
+    <p></p>
+    <ul>
         {% for group in student.groups %}
-            <li>
-                <a href="{{ url_for('main.group', group_id=group.id) }}">
-                    <h4>{{ group.name }}</h4>
-                </a>
-            </li>
+        <li>
+            <a href="{{ url_for('main.group', group_id=group.id) }}">
+                <h4>{{ group.name }}</h4>
+            </a>
+        </li>
         {% endfor %}
-        </ul>
-    </div>
+    </ul>
+</div>
 {% endif %}
 
 {% endblock %}
