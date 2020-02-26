@@ -151,6 +151,16 @@ class DisciplinePointRecord(db.Model):
     theme_id = db.Column(db.Integer, db.ForeignKey('theme.id'))
     mentor_id = db.Column(db.Integer, db.ForeignKey('mentor.id'))
 
+    @staticmethod
+    def to_header():
+        render = get_template_attribute('main/_discipline_records.html', 'header')
+        return render()
+
+    def to_row(self):
+        render = get_template_attribute('main/_discipline_records.html', 'render')
+        return render(self)
+
+
 
 class ReferPointRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)

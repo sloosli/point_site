@@ -1,0 +1,23 @@
+
+{% macro header() %}
+<thead>
+<tr>
+    <th>Предмет</th>
+    <th>Тема</th>
+    <th>Баллы</th>
+    <th>Дата</th>
+    <th>Ментор</th>
+</tr>
+</thead>
+{% endmacro %}
+
+
+{% macro render(record) %}
+<tr>
+    <td>{{ record.theme.discipline.name }}</td>
+    <td>{{ record.theme.name }}</td>
+    <td>{{ record.amount }}</td>
+    <td>{{ record.timestamp.date() }}</td>
+    <td>{{ record.mentor.last_name }} {{ record.mentor.first_name }}</td>
+</tr>
+{% endmacro %}

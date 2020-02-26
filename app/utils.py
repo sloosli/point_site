@@ -1,7 +1,7 @@
 from functools import wraps
 from flask import redirect, url_for, abort
 from flask_login import current_user
-from app.models import Mentor, Student, Group
+from app.models import Mentor, Student, Group, DisciplinePointRecord
 from app.constants import Access
 
 
@@ -38,3 +38,15 @@ def get_group(group_id):
 
 def is_admin(user):
     return current_user.access_level in [Access.ADMIN, Access.SUPER_ADMIN]
+
+
+def get_discipline_records(student):
+    if current_user.access_level == Access.HAWK:
+        return None
+
+    discipline_records = student.discipline_records
+    if current_user.access_level in [Access.MENTOR, Access.UP_MENTOR]:
+        discipline_records.filter(
+            DisciplinePointRecord.theme_id(current_user.discipline.themes))
+
+    return discipline_records

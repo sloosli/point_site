@@ -21,7 +21,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    {% for student in sorted(group.students, key=lambda x:x.last_name) %}
+                    {% for student in group.students|sort(attribute='last_name') %}
                     <tr>
                         <td><a href="{{ url_for('main.student', student_id=student.id) }}">
                             {{ student.username }}

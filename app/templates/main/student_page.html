@@ -5,7 +5,7 @@
 {% block app_content %}
 
 
-{% if form %}
+{% if form or group_form %}
 <div class="well bs-component">
     <a class="btn btn-primary" role="button" data-toggle="collapse" href="#collapseForm" aria-expanded="false"
        aria-controls="collapseForm">
@@ -13,6 +13,7 @@
     </a>
     <p></p>
     <div class="collapse" id="collapseForm">
+        {% if form %}
         <form action="" method="post" class="form" role="form">
             {% include '_form.html' %}
             <!-- Триггер для всплывающего окна-->
@@ -20,6 +21,11 @@
                 Удалить
             </button>
         </form>
+        <p></p>
+        {% endif %}
+        {% if group_form %}
+            {{ wtf.quick_form(group_form) }}
+        {% endif %}
         <!-- Подтверждение -->
         <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
              aria-hidden="true">
@@ -46,11 +52,19 @@
 </div>
 {% endif %}
 
-{% if group_form %}
 <div class="well bs-component">
-    {{ wtf.quick_form(group_form) }}
+    {% if current_user.access_level != 3%}
+    <a href="{{ url_for('main.disc_table', student_id=student.id) }}">
+        <h4>Баллы за предметы</h4>
+    </a>
+    {% endif %}
+
+    {% if current_user.access_level not in [1, 2]%}
+    <a href="#">
+        <h4>Баллы за приглашения</h4>
+    </a>
+    {% endif%}
 </div>
-{% endif %}
 
 {% if student.groups.count() > 0 %}
 <div class="well bs-component">

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% import 'bootstrap/wtf.html' as wtf %}
+
+
+{% block app_content %}
+<div class="well bs-component">
+    <a class="btn btn-primary" role="button" data-toggle="collapse" href="#collapseForm" aria-expanded="false"
+       aria-controls="collapseForm">
+        Редактирование
+    </a>
+    <p></p>
+    <div class="collapse" id="collapseForm">
+        {% if form %}
+            {{ wtf.quick_form(form)}}
+        {% endif %}
+    </div>
+</div>
+<div class="well bs-component">
+    <table class="table table-striped">
+        {{ type.to_header() }}
+        <tbody>
+        {% for record in records %}
+            {{ record.to_row() }}
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,12 +1,14 @@
 from flask import render_template, flash, redirect, url_for, g, request
 from flask_login import current_user, login_required
 from app import app, db
-from app.models import Student, Group
+from app.models import Student, Group, Theme, DisciplinePointRecord, ReferPointRecord
 from app.main import bp
 from app.main.forms import (StudentForm, ChangeStudentForm,
-                            GroupForm, ChangeGroupForm, GroupStudentForm)
+                            GroupForm, ChangeGroupForm, GroupStudentForm,
+                            DisciplineRecordForm)
 from app.constants import Access, navs
-from app.utils import admin_required, get_group, get_student, is_admin
+from app.utils import (admin_required, get_group, get_student, is_admin,
+                       get_discipline_records)
 
 
 @bp.before_app_request
@@ -179,3 +181,57 @@ def remove_student(student_id):
     db.session.commit()
 
     return redirect(url_for('main.student_list'))
+
+
+@bp.route('/table/discipline/<student_id>', methods=['GET', 'POST'])
+@login_required
+def disc_table(student_id):
+    current_student = get_student(student_id)
+
+    if current_user.access_level == Access.MENTOR:
+        m_gr = set(current_user.groups)
+        s_gr = set(current_student.groups)
+        if not m_gr & s_gr:
+            return redirect(url_for('main.index'))
+    if current_user.access_level == Access.HAWK:
+        return redirect(url_for('main.index'))
+
+    student_disc = current_student.groups.with_entities(Group.discipline_id)
+    busy_theme = current_student.discipline_records.with_entities(
+        DisciplinePointRecord.theme_id
+    )
+    vacant_theme = Theme.query.filter(
+        Theme.id.notin_(busy_theme)).filter(
+        Theme.discipline_id.in_(student_disc)
+    )
+
+    if current_user.access_level in [Access.MENTOR, Access.UP_MENTOR]:
+        vacant_theme = vacant_theme.filter_by(discipline=current_user.discipline)
+
+    vacant_theme = vacant_theme.order_by(
+        Theme.name
+    )
+
+    form = DisciplineRecordForm(vacant_theme)
+    records = get_discipline_records(current_student).all()
+    records = sorted(records, key=lambda x: (x.theme.discipline.name, x.theme.name))
+
+    if form.validate_on_submit():
+        theme = Theme.query.get(form.themes.data)
+        new_rec = DisciplinePointRecord(theme_id=form.themes.data,
+                                        mentor_id=current_user.id,
+                                        student_id=current_student.id)
+        if form.amount.data == 0 or form.amount.data is None or \
+                form.amount.data > theme.max_points:
+            new_rec.amount = theme.max_points
+        else:
+            new_rec.amount = form.amount.data
+
+        db.session.add(new_rec)
+        db.session.commit()
+
+        return redirect(url_for('main.disc_table', student_id=student_id))
+
+    return render_template('main/table.html', form=form,
+                           student=current_student, title=current_student.username,
+                           records=records, type=DisciplinePointRecord)
