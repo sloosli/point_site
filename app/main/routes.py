@@ -235,3 +235,5 @@ def disc_table(student_id):
     return render_template('main/table.html', form=form,
                            student=current_student, title=current_student.username,
                            records=records, type=DisciplinePointRecord)
+
+
