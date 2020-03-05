@@ -45,17 +45,25 @@ def index():
 
 
 @bp.route('/self', methods=['GET', 'POST'])
-@admin_required
 def self_mentor():
     return redirect(url_for('admins.mentor', username=current_user.username))
 
 
 @bp.route('/user/<username>', methods=['GET', 'POST'])
-@admin_required
 def mentor(username):
+    if username != current_user.username and \
+            current_user.access_level not in [Access.ADMIN, Access.SUPER_ADMIN]:
+        return redirect(url_for('main.index'))
+
     user = get_mentor(username)
-    form = ChangeMentorForm(current_access=current_user.access_level,
-                            user=user)
+
+    if user.id == current_user.id:
+        form = ChangeMentorForm(current_access=current_user.access_level,
+                                user=user, is_self=True)
+    else:
+        form = ChangeMentorForm(current_access=current_user.access_level,
+                                user=user)
+
     group_form = None
     if user.access_level == Access.MENTOR:
         group_form = GroupMentorForm(user)
@@ -66,10 +74,6 @@ def mentor(username):
         return render_template('admins/mentor_page.html', group_form=group_form,
                                form=form, mentor=user, title=user.username)
 
-    if user.id == current_user.id:
-        form.access_levels.flags.not_need = True
-        form.disciplines.flags.not_need = True
-
     if request_form['submit'] == 'Изменить' and form.validate_on_submit():
         user.username = form.username.data
         user.first_name = form.first_name.data
@@ -77,11 +81,13 @@ def mentor(username):
         if form.password.data:
             user.set_password(form.password.data)
 
-        if form.access_levels.data < current_user.access_level and \
+        if form.access_levels and \
+                form.access_levels.data < current_user.access_level and \
                 user.id != current_user.id:
             user.access_level = form.access_levels.data
 
-        if form.access_levels.data in [Access.MENTOR, Access.UP_MENTOR]:
+        if form.access_levels.data in [Access.MENTOR, Access.UP_MENTOR]and \
+                user.id != current_user.id:
             user.discipline_id = form.disciplines.data
 
         db.session.commit()

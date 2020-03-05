@@ -21,7 +21,7 @@ def before_app_request():
 def index():
     if current_user.access_level != Access.HAWK:
         return redirect(url_for('main.group_list'))
-    return redirect(url_for('main.student_list'))
+    return redirect(url_for('students.list'))
 
 
 @bp.route('/group_list', methods=['GET', 'POST'])

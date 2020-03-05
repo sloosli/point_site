@@ -13,7 +13,7 @@
         <p>
             Уровень доступа: {{ mentor.access }}
         </p>
-        {% if mentor.access.name in ['Наставник', 'Главный наставник'] %}
+        {% if mentor.access in ['Наставник', 'Главный наставник'] %}
         <p>
             Предмет: {{ mentor.discipline.name}}
         </p>

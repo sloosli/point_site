@@ -88,7 +88,7 @@ def student(student_id):
 
             flash("Группа %s добавлена студенту %s" % (current_group.name, user.username))
 
-            return redirect(url_for('main.student', student_id=user.id))
+            return redirect(url_for('students.student', student_id=user.id))
 
     return render_template('students/student_page.html', group_form=group_form,
                            form=form, student=user, title=user.username)

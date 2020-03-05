@@ -33,10 +33,10 @@ my_profile = Nav('Мой профиль', 'admins.self_mentor')
 disciplines = Nav('Предметы', 'disciplines.index')
 
 navs = {
-    Access.MENTOR: [groups],
-    Access.UP_MENTOR: [groups],
-    Access.HAWK: [students],
-    Access.ANGEL: [groups, students],
+    Access.MENTOR: [groups, my_profile],
+    Access.UP_MENTOR: [groups, my_profile],
+    Access.HAWK: [students, my_profile],
+    Access.ANGEL: [groups, students, my_profile],
     Access.ADMIN: [groups, students, mentors, disciplines, my_profile],
     Access.SUPER_ADMIN: [groups, students, mentors, disciplines, my_profile],
 }

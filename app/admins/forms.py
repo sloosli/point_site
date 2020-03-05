@@ -1,4 +1,5 @@
 from flask_wtf import FlaskForm
+from flask import flash
 from wtforms import StringField, PasswordField, SubmitField, SelectField
 from wtforms.validators import ValidationError, DataRequired, EqualTo
 from app.constants import Access, access_desc
@@ -43,7 +44,7 @@ class ChangeMentorForm(MentorForm):
     password2 = PasswordField('Повторите пароль', validators=[EqualTo('password')])
     submit = SubmitField('Изменить')
 
-    def __init__(self, current_access, user, *args, **kwargs):
+    def __init__(self, current_access, user, is_self=False, *args, **kwargs):
         kwargs['first_name'] = user.first_name or 'Имя'
         kwargs['last_name'] = user.last_name or 'Фамилия'
         kwargs['username'] = user.username
@@ -55,6 +56,11 @@ class ChangeMentorForm(MentorForm):
                                                *args, **kwargs)
         self.password.label.text = 'Новый пароль'
         self.submit.label.text = 'Изменить'
+        if is_self:
+            self.access_levels.flags.not_need = True
+            self.access_levels.validators = []
+            self.disciplines.flags.not_need = True
+
 
 
 class GroupMentorForm(FlaskForm):
