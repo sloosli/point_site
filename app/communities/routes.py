@@ -37,7 +37,7 @@ def bot():
 
         else:
             vk.messages.send(
-                message=group.asnwer(student),
+                message=group.answer(student),
                 random_id=get_random_id(),
                 peer_id=from_id
             )
