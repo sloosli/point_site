@@ -26,7 +26,7 @@ def bot():
     vk = vk_session.get_api()
 
     if data['type'] == 'message_new':
-        from_id = data['object']['from_id']
+        from_id = data['object']['message']['from_id']
         student = Student.query.filter_by(vk_id=from_id).first()
         if student is None:
             vk.messages.send(
