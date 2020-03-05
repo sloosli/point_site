@@ -179,7 +179,6 @@ class VkGroup(db.Model):
     secret_key = db.Column(db.String(64))
     message = db.Column(db.String(256), default=default_message)
 
-    @property
     def answer(self, student):
         message = self.message
         return message.format(username=student.username, points=student.total_points())
