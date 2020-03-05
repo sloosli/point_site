@@ -27,7 +27,7 @@ def index():
                            data=data, title='Список предметов')
 
 
-@bp.route('/<discipline_id>', methods=['GET', 'POST'])
+@bp.route('/id/<discipline_id>', methods=['GET', 'POST'])
 @admin_required
 def discipline(discipline_id):
 

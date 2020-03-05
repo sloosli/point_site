@@ -50,7 +50,7 @@ def self_mentor():
     return redirect(url_for('admins.mentor', username=current_user.username))
 
 
-@bp.route('/<username>', methods=['GET', 'POST'])
+@bp.route('/user/<username>', methods=['GET', 'POST'])
 @admin_required
 def mentor(username):
     user = get_mentor(username)

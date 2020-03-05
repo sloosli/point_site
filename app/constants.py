@@ -1,4 +1,6 @@
 
+# Доступ
+
 class Access:
     MENTOR = 1
     UP_MENTOR = 2
@@ -17,14 +19,14 @@ access_desc = {
     Access.SUPER_ADMIN: 'Главный администратор',
 }
 
-
+# Навигация
 class Nav:
     def __init__(self, *args):
         self.name = args[0]
         self.url = args[1]
 
 
-students = Nav('Студенты', 'main.student_list')
+students = Nav('Студенты', 'students.list')
 groups = Nav('Группы', 'main.group_list')
 mentors = Nav('Менторы', 'admins.index')
 my_profile = Nav('Мой профиль', 'admins.self_mentor')
@@ -38,3 +40,8 @@ navs = {
     Access.ADMIN: [groups, students, mentors, disciplines, my_profile],
     Access.SUPER_ADMIN: [groups, students, mentors, disciplines, my_profile],
 }
+
+# Сообщества
+
+default_message = "Привет, "
+

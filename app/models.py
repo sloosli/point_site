@@ -3,7 +3,7 @@ from flask import get_template_attribute
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login
-from app.constants import access_desc
+from app.constants import access_desc, default_message
 
 
 group_mentors = db.Table(
@@ -174,5 +174,12 @@ class ReferPointRecord(db.Model):
 
 class VkGroup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    token = db.Column(db.String(128))
     confirmation_key = db.Column(db.String(32))
     secret_key = db.Column(db.String(64))
+    message = db.Column(db.String(256), default=default_message)
+
+    @property
+    def answer(self, student):
+        message = self.message
+        return message.format(username=student.username, points=student.total_points())

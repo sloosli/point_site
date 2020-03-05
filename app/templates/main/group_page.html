@@ -72,7 +72,7 @@
         <tbody>
         {% for student in group.students|sort(attribute='last_name') %}
         <tr>
-            <td><a href="{{ url_for('main.student', student_id=student.id) }}">
+            <td><a href="{{ url_for('students.student', student_id=student.id) }}">
                 {{ student.username }}
             </a></td>
             <td><a href="https://vk.com/id{{ student.vk_id }}">

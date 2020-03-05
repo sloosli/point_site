@@ -1,11 +1,9 @@
 from flask import render_template, flash, redirect, url_for, g, request
 from flask_login import current_user, login_required
 from app import app, db
-from app.models import Student, Group, Theme, DisciplinePointRecord, ReferPointRecord
+from app.models import  Group, Theme, DisciplinePointRecord
 from app.main import bp
-from app.main.forms import (StudentForm, ChangeStudentForm,
-                            GroupForm, ChangeGroupForm, GroupStudentForm,
-                            DisciplineRecordForm)
+from app.main.forms import GroupForm, ChangeGroupForm, DisciplineRecordForm
 from app.constants import Access, navs
 from app.utils import (admin_required, get_group, get_student, is_admin,
                        get_discipline_records)
@@ -63,7 +61,7 @@ def group_list():
                            title='Список групп', data=groups)
 
 
-@bp.route('/group/<group_id>', methods=['GET', 'POST'])
+@bp.route('/group/id/<group_id>', methods=['GET', 'POST'])
 @login_required
 def group(group_id):
     current_group = get_group(group_id)
@@ -97,90 +95,6 @@ def remove_group(group_id):
     db.session.commit()
 
     return redirect(url_for('main.group_list'))
-
-
-@bp.route('/student_list', methods=['GET', 'POST'])
-@login_required
-def student_list():
-    if current_user.access_level in [Access.MENTOR, Access.UP_MENTOR]:
-        return redirect(url_for('main.group_list'))
-
-    page = request.args.get('page', 1, type=int)
-    form = None
-    if is_admin(current_user):
-        form = StudentForm()
-        if form.validate_on_submit():
-            # noinspection PyArgumentList
-            new_student = Student(first_name=form.first_name.data,
-                                  last_name=form.last_name.data,
-                                  vk_id=form.vk_id.data)
-
-            db.session.add(new_student)
-            db.session.commit()
-            flash('Студент %s добавлен' % (
-                    new_student.last_name + ' ' + new_student.first_name))
-            return redirect(url_for('main.student_list', page=page))
-
-    students = Student.query.order_by(
-        Student.last_name, Student.first_name
-    ).paginate(
-        page, app.config['STUDENTS_PER_PAGE'], False
-    )
-    g.url_for = 'main.student_list'
-    return render_template('data_list.html', form=form,
-                           title='Список студентов', data=students)
-
-
-@bp.route('/student/<student_id>', methods=['GET', 'POST'])
-@login_required
-def student(student_id):
-    user = get_student(student_id)
-    form = None
-    group_form = None
-    request_form = request.form
-
-    if is_admin(current_user):
-
-        form = ChangeStudentForm(user)
-        group_form = GroupStudentForm(user)
-
-        if not request_form.get('submit', None):
-            return render_template('main/student_page.html', group_form=group_form,
-                                   form=form, student=user, title=user.username)
-
-        if request_form['submit'] == 'Изменить' and form.validate_on_submit():
-            user.first_name = form.first_name.data
-            user.last_name = form.last_name.data
-            user.vk_id = form.vk_id.data
-
-            db.session.commit()
-            flash('Запись студента %s изменена' % user.username)
-
-            return redirect(url_for('main.student', student_id=user.id))
-
-        if request_form['submit'] == 'Добавить' and group_form.validate_on_submit():
-            current_group = Group.query.filter_by(id=group_form.groups.data).first()
-            user.add_group(current_group)
-            db.session.commit()
-
-            flash("Группа %s добавлена студенту %s" % (current_group.name, user.username))
-
-            return redirect(url_for('main.student', student_id=user.id))
-
-    return render_template('main/student_page.html', group_form=group_form,
-                           form=form, student=user, title=user.username)
-
-
-@bp.route('/student/remove/<student_id>')
-@login_required
-@admin_required
-def remove_student(student_id):
-    user = get_student(student_id)
-
-    db.session.delete(user)
-    db.session.commit()
-
-    return redirect(url_for('main.student_list'))
 
 
 @bp.route('/table/discipline/<student_id>', methods=['GET', 'POST'])

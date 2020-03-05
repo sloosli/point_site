@@ -12,14 +12,38 @@
     </a>
     <p></p>
     <div class="collapse" id="collapseForm">
-        <form action="" method="post" class="form" role="form">
+            <form action="" method="post" class="form" role="form">
             {% include '_form.html' %}
-        </form>
+            </form>
+            <p></p>
+            <form action="{{ url_for('students.multiple_add') }}" method="post" class="form" role="form">
+                <div class="form-group required">
+                    <label class="control-label" for="id_list">Список id</label>
+                    <textarea class="form-control" id="id_list" name="id_list" required rows="10"></textarea>
+                </div>
+                <input class="btn btn-default" id="submit_multiple" name="submit" type="submit" value="Добавить несколько">
+            </form>
     </div>
 </div>
 <p></p>
+<div class="well bs-component">
+    <form action="" method="post" class="form" role="form">
+        <div class="form-group">
+            <input class="form-control" placeholder="Имя" id="first_name" name="first_name" type="text" value="">
+        </div>
+        <div class="form-group">
+            <input class="form-control" placeholder="Фамилия" id="last_name" name="last_name" type="text" value="">
+        </div>
+        <div class="form-group">
+            <input class="form-control" placeholder="ID Вконтакте" id="_id" name="_id" type="text" value="">
+        </div>
+        <input class="btn btn-default" id="search" name="search" type="submit" value="Поиск">
+        <a href="{{ url_for('students.list') }}"><input class="btn btn-default" type="submit" value="Сбросить"></a>
+    </form>
+</div>
+<p></p>
 {% endif %}
-{% if data %}
+{% if data.items %}
 <div class="row">
     {% for something in data.items %}
     {{ something.to_html() }}
@@ -66,5 +90,9 @@
     </ul>
 </nav>
 {% endif %}
+{% else %}
+<h3>Упс, ничего не найдено...</h3>
+<p></p>
+<a href="{{ url_for('students.list') }}"><h4>Назад</h4></a>
 {% endif %}
 {% endblock %}
