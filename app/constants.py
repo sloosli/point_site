@@ -43,5 +43,5 @@ navs = {
 
 # Сообщества
 
-default_message = "Привет, "
+default_message = "Привет, {username}\nУ тебя {points} баллов"
 

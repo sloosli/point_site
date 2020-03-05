@@ -13,8 +13,10 @@ def bot():
             'type' not in data or 'group_id' not in data:
         return 'not ok'
 
-    group = VkGroup.get(data['group_id'])
-    if 'secret' not in data or data['secret'] != group.secret_key:
+    group = VkGroup.query.get(data['group_id'])
+    if group is None or \
+            'secret' not in data or \
+            data['secret'] != group.secret_key:
         return 'not ok'
 
     if data['type'] == 'confirmation':
@@ -25,11 +27,19 @@ def bot():
 
     if data['type'] == 'message_new':
         from_id = data['object']['from_id']
-        student = Student.get(int(from_id))
-        vk.messages.send(
-            message=group.asnwer(student),
-            random_id=get_random_id(),
-            perr_id=from_id
-        )
+        student = Student.query.filter_by(vk_id=from_id).first()
+        if student is None:
+            vk.messages.send(
+                message='Ты не являешься нашим учеником(',
+                random_id=get_random_id(),
+                peer_id=from_id
+            )
+
+        else:
+            vk.messages.send(
+                message=group.asnwer(student),
+                random_id=get_random_id(),
+                peer_id=from_id
+            )
 
     return 'ok'
