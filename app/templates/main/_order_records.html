@@ -6,6 +6,7 @@
     <th>Подарок</th>
     <th>Стоимость</th>
     <th>Дата</th>
+    <th>Комментарий</th>
     <th>Статус</th>
 </tr>
 </thead>
@@ -18,6 +19,7 @@
     <td>{{ record.order.name }}</td>
     <td>{{ record.cost }}</td>
     <td>{{ record.timestamp.date() }}</td>
+    <td>{{ record.commentary }}</td>
     <td>{{ record.status }}</td>
 </tr>
 {% endmacro %}

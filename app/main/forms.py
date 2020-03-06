@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, SubmitField, SelectField
 from wtforms.validators import ValidationError, DataRequired
-from app.models import Group, Discipline, ReferPointRecord, Order
+from app.models import Group, Discipline, ReferPointRecord, Order, OrderRecord
 
 
 class GroupForm(FlaskForm):
@@ -74,7 +74,7 @@ class OrderRecordForm(FlaskForm):
     def __init__(self, student, *args, **kwargs):
         super(OrderRecordForm, self).__init__(*args, **kwargs)
         self._student = student
-        busy_orders = student.order_records.with_entities(Order.id)
+        busy_orders = student.order_records.with_entities(OrderRecord.order_id)
         self.orders.choices = [(t.id, "Стоимость: " + str(t.cost) + " " + t.name)
                                for t in Order.query.filter(
                 Order.id.notin_(busy_orders)

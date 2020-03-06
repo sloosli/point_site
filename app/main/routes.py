@@ -201,14 +201,17 @@ def order_table(student_id):
 
     if form.validate_on_submit():
         order = Order.query.get(form.orders.data)
-        new_rec = OrderRecord(cost=order.cost,
-                              status_id=OrderStatus.Ordered,
-                              commentary=form.commentary.data,
-                              student_id=current_student.id,
-                              order_id=order.id)
+        if current_student.total_points() < order.cost:
+            flash("У данного студента недостаточно баллов")
+        else:
+            new_rec = OrderRecord(cost=order.cost,
+                                  status_id=OrderStatus.Ordered,
+                                  commentary=form.commentary.data,
+                                  student_id=current_student.id,
+                                  order_id=order.id)
 
-        db.session.add(new_rec)
-        db.session.commit()
+            db.session.add(new_rec)
+            db.session.commit()
 
         return redirect(url_for('main.order_table', student_id=student_id))
 
