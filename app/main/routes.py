@@ -135,7 +135,7 @@ def disc_table(student_id):
         new_rec = DisciplinePointRecord(theme_id=form.themes.data,
                                         mentor_id=current_user.id,
                                         student_id=current_student.id)
-        if form.amount.data < 0 or form.amount.data is None or \
+        if form.amount.data <= 0 or form.amount.data is None or \
                 form.amount.data > theme.max_points:
             new_rec.amount = theme.max_points
         else:
