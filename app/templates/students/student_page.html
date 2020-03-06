@@ -53,16 +53,17 @@
 {% endif %}
 
 <div class="well bs-component">
+    <h4>Всего баллов: {{ student.total_points() }}</h4>
     {% if current_user.access_level != 3%}
-    <a href="{{ url_for('main.disc_table', student_id=student.id) }}">
-        <h4>Баллы за предметы</h4>
-    </a>
+    <h4>Баллы за предметы: {{ student.discipline_points() }}
+        <a href="{{ url_for('main.disc_table', student_id=student.id) }}">Таблица</a>
+    </h4>
     {% endif %}
 
     {% if current_user.access_level not in [1, 2]%}
-    <a href="#">
-        <h4>Баллы за приглашения</h4>
-    </a>
+    <h4>Баллы за приглашения: {{ student.refer_points() }}
+        <a href="{{ url_for('main.refer_table', student_id=student.id) }}">Таблица</a>
+    </h4>
     {% endif%}
 </div>
 

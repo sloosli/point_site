@@ -1,0 +1,21 @@
+
+{% macro header() %}
+<thead>
+<tr>
+    <th>Приглашенный</th>
+    <th>Баллы</th>
+    <th>Дата</th>
+    <th>Ментор</th>
+</tr>
+</thead>
+{% endmacro %}
+
+
+{% macro render(record) %}
+<tr>
+    <td><a href="https://vk.com/id{{ record.refer_vk_id }}">vk.com/id{{ record.refer_vk_id }}</a></td>
+    <td>{{ record.amount }}</td>
+    <td>{{ record.timestamp.date() }}</td>
+    <td>{{ record.mentor.last_name }} {{ record.mentor.first_name }}</td>
+</tr>
+{% endmacro %}

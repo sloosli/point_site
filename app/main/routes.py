@@ -1,9 +1,9 @@
 from flask import render_template, flash, redirect, url_for, g, request
 from flask_login import current_user, login_required
 from app import app, db
-from app.models import  Group, Theme, DisciplinePointRecord
+from app.models import  Group, Theme, DisciplinePointRecord, ReferPointRecord
 from app.main import bp
-from app.main.forms import GroupForm, ChangeGroupForm, DisciplineRecordForm
+from app.main.forms import GroupForm, ChangeGroupForm, DisciplineRecordForm, ReferRecordForm
 from app.constants import Access, navs
 from app.utils import (admin_required, get_group, get_student, is_admin,
                        get_discipline_records)
@@ -135,7 +135,7 @@ def disc_table(student_id):
         new_rec = DisciplinePointRecord(theme_id=form.themes.data,
                                         mentor_id=current_user.id,
                                         student_id=current_student.id)
-        if form.amount.data == 0 or form.amount.data is None or \
+        if form.amount.data < 0 or form.amount.data is None or \
                 form.amount.data > theme.max_points:
             new_rec.amount = theme.max_points
         else:
@@ -151,3 +151,29 @@ def disc_table(student_id):
                            records=records, type=DisciplinePointRecord)
 
 
+@bp.route('/table/referal/<student_id>', methods=['GET', 'POST'])
+@login_required
+def refer_table(student_id):
+    current_student = get_student(student_id)
+
+    if current_user.access_level < Access.HAWK:
+        return redirect(url_for('main.index'))
+
+    form = ReferRecordForm()
+    records = current_student.refer_records
+    records = sorted(records, key=lambda x: x.timestamp)
+
+    if form.validate_on_submit():
+        new_rec = ReferPointRecord(refer_vk_id=form.referal.data,
+                                   amount=form.amount.data,
+                                   student_id=current_student.id,
+                                   mentor_id=current_user.id)
+
+        db.session.add(new_rec)
+        db.session.commit()
+
+        return redirect(url_for('main.refer_table', student_id=student_id))
+
+    return render_template('main/table.html', form=form,
+                           student=current_student, title=current_student.username,
+                           records=records, type=ReferPointRecord)

@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, SubmitField, SelectField
 from wtforms.validators import ValidationError, DataRequired
-from app.models import Student, Group, Discipline, Theme
+from app.models import  Group, Discipline
 
 
 
@@ -41,11 +41,19 @@ class DisciplineRecordForm(FlaskForm):
 
     def __init__(self, themes, *args, **kwargs):
         super(DisciplineRecordForm, self).__init__(*args, **kwargs)
-        self.themes.choices = [(theme.id, theme.discipline.name + ' ' +theme.name)
+        self.themes.choices = [(theme.id, theme.discipline.name + ' ' + theme.name)
                                for theme in themes]
+
+    def validate_referal(self, referal):
+        if self.referal.data < 0:
+            raise ValidationError("Значение должно быть положительным")
 
 
 class ReferRecordForm(FlaskForm):
-    referal = StringField('Приглашенный', validators=[DataRequired()], coerce=int)
+    referal = IntegerField('Приглашенный', validators=[DataRequired()])
+    amount = IntegerField('Баллы', default=100)
+    submit = SubmitField('Добавить')
 
-
+    def validate_referal(self, referal):
+        if self.referal.data < 0:
+            raise ValidationError("Значение должно быть положительным")

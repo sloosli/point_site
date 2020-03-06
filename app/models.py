@@ -91,11 +91,18 @@ class Student(db.Model):
         render = get_template_attribute('main/_student.html', 'render')
         return render(self)
 
-    def total_points(self):
-        if self.discipline_records or self.refer_records:
-            return sum(map(lambda x: x.amount, self.discipline_records)) + \
-                   sum(map(lambda x: x.amount, self.refer_records))
+    def refer_points(self):
+        if self.refer_records:
+            return sum(map(lambda x: x.amount, self.refer_records))
         return 0
+
+    def discipline_points(self):
+        if self.discipline_records:
+            return sum(map(lambda x: x.amount, self.discipline_records))
+        return 0
+
+    def total_points(self):
+        return self.refer_points() + self.discipline_points()
 
     def is_in_group(self, group):
         return self.groups.filter_by(id=group.id).count() > 0
@@ -161,7 +168,6 @@ class DisciplinePointRecord(db.Model):
         return render(self)
 
 
-
 class ReferPointRecord(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     refer_vk_id = db.Column(db.Integer, unique=True)
@@ -170,6 +176,15 @@ class ReferPointRecord(db.Model):
 
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
     mentor_id = db.Column(db.Integer, db.ForeignKey('mentor.id'))
+
+    @staticmethod
+    def to_header():
+        render = get_template_attribute('main/_referal_records.html', 'header')
+        return render()
+
+    def to_row(self):
+        render = get_template_attribute('main/_referal_records.html', 'render')
+        return render(self)
 
 
 class VkGroup(db.Model):
