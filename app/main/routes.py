@@ -1,10 +1,12 @@
 from flask import render_template, flash, redirect, url_for, g, request
 from flask_login import current_user, login_required
 from app import app, db
-from app.models import  Group, Theme, DisciplinePointRecord, ReferPointRecord
+from app.models import (Group, Theme, DisciplinePointRecord, ReferPointRecord,
+                        OrderRecord, Order)
 from app.main import bp
-from app.main.forms import GroupForm, ChangeGroupForm, DisciplineRecordForm, ReferRecordForm
-from app.constants import Access, navs
+from app.main.forms import (GroupForm, ChangeGroupForm, DisciplineRecordForm,
+                            ReferRecordForm, OrderRecordForm)
+from app.constants import Access, navs, OrderStatus
 from app.utils import (admin_required, get_group, get_student, is_admin,
                        get_discipline_records)
 
@@ -106,8 +108,11 @@ def disc_table(student_id):
         m_gr = set(current_user.groups)
         s_gr = set(current_student.groups)
         if not m_gr & s_gr:
+            flash("У вас недостаточно прав для просмота данной страницы")
             return redirect(url_for('main.index'))
+
     if current_user.access_level == Access.HAWK:
+        flash("У вас недостаточно прав для просмота данной страницы")
         return redirect(url_for('main.index'))
 
     student_disc = current_student.groups.with_entities(Group.discipline_id)
@@ -144,6 +149,7 @@ def disc_table(student_id):
         db.session.add(new_rec)
         db.session.commit()
 
+        flash("Запись добавлена")
         return redirect(url_for('main.disc_table', student_id=student_id))
 
     return render_template('main/table.html', form=form,
@@ -157,6 +163,7 @@ def refer_table(student_id):
     current_student = get_student(student_id)
 
     if current_user.access_level < Access.HAWK:
+        flash("У вас недостаточно прав для просмота данной страницы")
         return redirect(url_for('main.index'))
 
     form = ReferRecordForm()
@@ -171,9 +178,40 @@ def refer_table(student_id):
 
         db.session.add(new_rec)
         db.session.commit()
-
+        flash("Запись добавлена")
         return redirect(url_for('main.refer_table', student_id=student_id))
 
     return render_template('main/table.html', form=form,
                            student=current_student, title=current_student.username,
                            records=records, type=ReferPointRecord)
+
+
+@bp.route('/table/orders/<student_id>', methods=['GET', 'POST'])
+@login_required
+def order_table(student_id):
+    current_student = get_student(student_id)
+
+    if current_user.access_level < Access.ANGEL:
+        flash("У вас недостаточно прав для просмота данной страницы")
+        return redirect(url_for('main.index'))
+
+    form = OrderRecordForm(student=current_student)
+    records = current_student.order_records
+    records = sorted(records, key=lambda x: x.timestamp)
+
+    if form.validate_on_submit():
+        order = Order.query.get(form.orders.data)
+        new_rec = OrderRecord(cost=order.cost,
+                              status_id=OrderStatus.Ordered,
+                              commentary=form.commentary.data,
+                              student_id=current_student.id,
+                              order_id=order.id)
+
+        db.session.add(new_rec)
+        db.session.commit()
+
+        return redirect(url_for('main.order_table', student_id=student_id))
+
+    return render_template('main/table.html', form=form,
+                           student=current_student, title=current_student.username,
+                           records=records, type=OrderRecord)

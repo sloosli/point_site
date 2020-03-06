@@ -1,6 +1,6 @@
 
-# Доступ
 
+# Доступ
 class Access:
     MENTOR = 1
     UP_MENTOR = 2
@@ -19,6 +19,7 @@ access_desc = {
     Access.SUPER_ADMIN: 'Главный администратор',
 }
 
+
 # Навигация
 class Nav:
     def __init__(self, *args):
@@ -29,19 +30,35 @@ class Nav:
 students = Nav('Студенты', 'students.list')
 groups = Nav('Группы', 'main.group_list')
 mentors = Nav('Менторы', 'admins.index')
-my_profile = Nav('Мой профиль', 'admins.self_mentor')
 disciplines = Nav('Предметы', 'disciplines.index')
 
 navs = {
-    Access.MENTOR: [groups, my_profile],
-    Access.UP_MENTOR: [groups, my_profile],
-    Access.HAWK: [students, my_profile],
-    Access.ANGEL: [groups, students, my_profile],
-    Access.ADMIN: [groups, students, mentors, disciplines, my_profile],
-    Access.SUPER_ADMIN: [groups, students, mentors, disciplines, my_profile],
+    Access.MENTOR: [groups],
+    Access.UP_MENTOR: [groups],
+    Access.HAWK: [students],
+    Access.ANGEL: [groups, students],
+    Access.ADMIN: [groups, students, mentors, disciplines],
+    Access.SUPER_ADMIN: [groups, students, mentors, disciplines],
 }
 
 # Сообщества
+default_message = "Привет, {username}. У тебя {points} баллов"
 
-default_message = "Привет, {username}\nУ тебя {points} баллов"
 
+# Заказы
+class Orders:
+    Set = 1
+    Discount = 2
+
+    _desc = [["Не заказано", "В ожидании отправки", "Отправлено"],
+             ["Не заказана", "Заказана", "Использована"]]
+
+    @classmethod
+    def status(cls, type_id, status_id):
+        return cls._desc[type_id - 1][status_id - 1]
+
+
+class OrderStatus:
+    NotOrdered = 1
+    Ordered = 2
+    Done = 3

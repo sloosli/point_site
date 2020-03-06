@@ -3,7 +3,7 @@ from flask_login import current_user
 from app import app, db
 from app.models import Mentor, Group
 from app.admins import bp
-from app.admins.forms import MentorForm, ChangeMentorForm, GroupMentorForm
+from app.admins.forms import MentorForm, ChangeMentorForm, GroupMentorForm, ChangeSelfForm
 from app.constants import Access
 from app.utils import get_mentor, admin_required
 
@@ -58,8 +58,7 @@ def mentor(username):
     user = get_mentor(username)
 
     if user.id == current_user.id:
-        form = ChangeMentorForm(current_access=current_user.access_level,
-                                user=user, is_self=True)
+        form = ChangeSelfForm(user=user)
     else:
         form = ChangeMentorForm(current_access=current_user.access_level,
                                 user=user)
@@ -78,17 +77,18 @@ def mentor(username):
         user.username = form.username.data
         user.first_name = form.first_name.data
         user.last_name = form.last_name.data
+
         if form.password.data:
             user.set_password(form.password.data)
 
-        if form.access_levels and \
+        if type(form) != ChangeSelfForm and \
                 form.access_levels.data < current_user.access_level and \
                 user.id != current_user.id:
             user.access_level = form.access_levels.data
 
-        if form.access_levels.data in [Access.MENTOR, Access.UP_MENTOR]and \
-                user.id != current_user.id:
-            user.discipline_id = form.disciplines.data
+            if form.access_levels.data in [Access.MENTOR, Access.UP_MENTOR] and \
+                    user.id != current_user.id:
+                user.discipline_id = form.disciplines.data
 
         db.session.commit()
         flash('%s %s Изменен' % (user.access, user.username))

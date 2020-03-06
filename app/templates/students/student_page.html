@@ -65,7 +65,24 @@
         <a href="{{ url_for('main.refer_table', student_id=student.id) }}">Таблица</a>
     </h4>
     {% endif%}
+    {% if current_user.access_level > 3 %}
+    <h4>Потраченные баллы: {{ student.orders_cost() }}
+        <a href="{{ url_for('main.order_table', student_id=student.id) }}">Таблица</a>
+    </h4>
+    {% endif%}
 </div>
+
+{% if current_user.access_level > 3 and student.order_records.count() > 0%}
+<div class="well bs-component">
+    <h3>Заказы:</h3>
+    <p></p>
+    <ul>
+        {% for order in student.order_records %}
+        <li><h4>{{ order.timestamp.date() }} {{ order.order.name }}</h4></li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif%}
 
 {% if student.groups.count() > 0 %}
 <div class="well bs-component">

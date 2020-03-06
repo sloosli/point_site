@@ -3,7 +3,7 @@ from flask import get_template_attribute
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login
-from app.constants import access_desc, default_message
+from app.constants import access_desc, default_message, Orders
 
 
 group_mentors = db.Table(
@@ -76,6 +76,7 @@ class Student(db.Model):
     last_name = db.Column(db.String(32))
     vk_id = db.Column(db.Integer, unique=True)
 
+    order_records = db.relationship('OrderRecord', backref='student', lazy='dynamic')
     discipline_records = db.relationship('DisciplinePointRecord', backref='student', lazy='dynamic')
     refer_records = db.relationship('ReferPointRecord', backref='student', lazy='dynamic')
     groups = db.relationship('Group',
@@ -91,6 +92,10 @@ class Student(db.Model):
         render = get_template_attribute('main/_student.html', 'render')
         return render(self)
 
+    def orders_cost(self):
+        if self.order_records:
+            return sum(map(lambda x: x.cost, self.order_records))
+
     def refer_points(self):
         if self.refer_records:
             return sum(map(lambda x: x.amount, self.refer_records))
@@ -102,7 +107,7 @@ class Student(db.Model):
         return 0
 
     def total_points(self):
-        return self.refer_points() + self.discipline_points()
+        return self.refer_points() + self.discipline_points() - self.orders_cost()
 
     def is_in_group(self, group):
         return self.groups.filter_by(id=group.id).count() > 0
@@ -197,3 +202,37 @@ class VkGroup(db.Model):
     def answer(self, student):
         message = self.message
         return message.format(username=student.username, points=student.total_points())
+
+
+class OrderRecord(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cost = db.Column(db.Integer)
+    status_id = db.Column(db.Integer)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    commentary = db.Column(db.String(256))
+
+    student_id = db.Column(db.Integer, db.ForeignKey('student.id'), index=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'), index=True)
+
+    @property
+    def status(self):
+        return Orders.status(self.order.type_id, self.status_id)
+
+    @staticmethod
+    def to_header():
+        render = get_template_attribute('main/_order_records.html', 'header')
+        return render()
+
+    def to_row(self):
+        render = get_template_attribute('main/_order_records.html', 'render')
+        return render(self)
+
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(32), unique=True)
+    cost = db.Column(db.Integer)
+    description = db.Column(db.String(256))
+    type_id = db.Column(db.Integer)
+
+    records = db.relationship('OrderRecord', backref='order', lazy='dynamic')

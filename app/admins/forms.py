@@ -44,7 +44,7 @@ class ChangeMentorForm(MentorForm):
     password2 = PasswordField('Повторите пароль', validators=[EqualTo('password')])
     submit = SubmitField('Изменить')
 
-    def __init__(self, current_access, user, is_self=False, *args, **kwargs):
+    def __init__(self, current_access, user, *args, **kwargs):
         kwargs['first_name'] = user.first_name or 'Имя'
         kwargs['last_name'] = user.last_name or 'Фамилия'
         kwargs['username'] = user.username
@@ -56,11 +56,32 @@ class ChangeMentorForm(MentorForm):
                                                *args, **kwargs)
         self.password.label.text = 'Новый пароль'
         self.submit.label.text = 'Изменить'
-        if is_self:
-            self.access_levels.flags.not_need = True
-            self.access_levels.validators = []
-            self.disciplines.flags.not_need = True
 
+
+class ChangeSelfForm(FlaskForm):
+    first_name = StringField('Имя', validators=[DataRequired()])
+    last_name = StringField('Фамилия', validators=[DataRequired()])
+    username = StringField('Username', validators=[DataRequired()])
+    password = PasswordField('Новый пароль')
+    password2 = PasswordField('Повторите пароль', validators=[EqualTo('password')])
+    submit = SubmitField('Изменить')
+
+    def __init__(self, user, *args, **kwargs):
+        kwargs['first_name'] = user.first_name or 'Имя'
+        kwargs['last_name'] = user.last_name or 'Фамилия'
+        kwargs['username'] = user.username
+        self.original_username = user.username
+
+        super(ChangeSelfForm, self).__init__(*args, **kwargs)
+
+        self.password.label.text = 'Новый пароль'
+        self.submit.label.text = 'Изменить'
+
+    def validate_username(self, username):
+        if username.data != self.original_username:
+            user = Mentor.query.filter_by(username=username.data).first()
+            if user is not None:
+                raise ValidationError('Пожалуйста выберите другое имя пользователя')
 
 
 class GroupMentorForm(FlaskForm):

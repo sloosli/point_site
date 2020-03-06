@@ -1,8 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, SubmitField, SelectField
 from wtforms.validators import ValidationError, DataRequired
-from app.models import Group, Discipline, ReferPointRecord
-
+from app.models import Group, Discipline, ReferPointRecord, Order
 
 
 class GroupForm(FlaskForm):
@@ -65,3 +64,18 @@ class ReferRecordForm(FlaskForm):
     def validate_amount(self, amount):
         if not self.amount.data or self.amount.data <= 0:
             raise ValidationError("Значение должно быть положительным")
+
+
+class OrderRecordForm(FlaskForm):
+    orders = SelectField('Подарок', validators=[DataRequired()], coerce=int)
+    commentary = StringField('Комментарий')
+    submit = SubmitField('Добавить')
+
+    def __init__(self, student, *args, **kwargs):
+        super(OrderRecordForm, self).__init__(*args, **kwargs)
+        self._student = student
+        busy_orders = student.order_records.with_entities(Order.id)
+        self.orders.choices = [(t.id, "Стоимость: " + str(t.cost) + " " + t.name)
+                               for t in Order.query.filter(
+                Order.id.notin_(busy_orders)
+            ).order_by(Order.id).all()]

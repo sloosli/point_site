@@ -1,0 +1,23 @@
+
+{% macro header() %}
+<thead>
+<tr>
+    <th>Студент</th>
+    <th>Подарок</th>
+    <th>Стоимость</th>
+    <th>Дата</th>
+    <th>Статус</th>
+</tr>
+</thead>
+{% endmacro %}
+
+
+{% macro render(record) %}
+<tr>
+    <td><a href="{{ url_for('students.student', student_id=record.student_id) }}">{{ record.student.username }}</a></td>
+    <td>{{ record.order.name }}</td>
+    <td>{{ record.cost }}</td>
+    <td>{{ record.timestamp.date() }}</td>
+    <td>{{ record.status }}</td>
+</tr>
+{% endmacro %}
