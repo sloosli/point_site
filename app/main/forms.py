@@ -8,7 +8,7 @@ class GroupForm(FlaskForm):
     name = StringField('Название', validators=[DataRequired()])
     disciplines = SelectField('Предмет', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Добавить')
-RadioField
+
     def __init__(self, group_name='', *args, **kwargs):
         super(GroupForm, self).__init__(*args, **kwargs)
         self.group_name = group_name
@@ -85,9 +85,10 @@ class OrderForm(FlaskForm):
     name = StringField('Название подарка', validators=[DataRequired()])
     cost = IntegerField('Стоимость', validators=[DataRequired()])
     description = StringField('Описание')
-    type = RadioField('Тип', choices=[(1, 'Набор'), (2, 'Скидка')])
+    type = RadioField('Тип', choices=[(1, 'Набор'), (2, 'Скидка')], coerce=int, default=1)
+    submit = SubmitField('Добавить')
 
     def validate_name(self, name):
-        order = Order.query.filter_by(name=name).first()
+        order = Order.query.filter_by(name=self.name.data).first()
         if order is not None:
             raise ValidationError("Подарок с таким названием уже существует")

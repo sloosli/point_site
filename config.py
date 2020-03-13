@@ -12,5 +12,6 @@ class Config(object):
     GROUPS_PER_PAGE = 4
     MENTORS_PER_PAGE = 12
     STUDENTS_PER_PAGE = 12
+    RECORDS_PER_PAGE = 20
 
     VK_SERVICE_KEY = '436dda3f436dda3f436dda3f9c431dc2a74436d436dda3f1d0d98e3aee65cafefd50e11'

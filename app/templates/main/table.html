@@ -3,6 +3,7 @@
 
 
 {% block app_content %}
+{% if form %}
 <div class="well bs-component">
     <a class="btn btn-primary" role="button" data-toggle="collapse" href="#collapseForm" aria-expanded="false"
        aria-controls="collapseForm">
@@ -10,11 +11,10 @@
     </a>
     <p></p>
     <div class="collapse" id="collapseForm">
-        {% if form %}
             {{ wtf.quick_form(form)}}
-        {% endif %}
     </div>
 </div>
+{% endif %}
 <div class="well bs-component">
     <table class="table table-striped">
         {{ type.to_header() }}

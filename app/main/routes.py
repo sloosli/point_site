@@ -5,7 +5,7 @@ from app.models import (Group, Theme, DisciplinePointRecord, ReferPointRecord,
                         OrderRecord, Order)
 from app.main import bp
 from app.main.forms import (GroupForm, ChangeGroupForm, DisciplineRecordForm,
-                            ReferRecordForm, OrderRecordForm)
+                            ReferRecordForm, OrderRecordForm, OrderForm)
 from app.constants import Access, navs, OrderStatus
 from app.utils import (admin_required, get_group, get_student, is_admin,
                        get_discipline_records)
@@ -26,10 +26,23 @@ def index():
     return redirect(url_for('students.list'))
 
 
+@bp.route('/order/list', methods=['GET', 'POST'])
 @admin_required
-@bp.route('/order/list', methods=['GET','POST'])
 def order_list():
     page = request.args.get('page', 1, type=int)
+
+    form = OrderForm()
+    if form.validate_on_submit():
+        order = Order(name=form.name.data,
+                      cost=form.cost.data,
+                      description=form.description.data,
+                      type_id=form.type.data)
+        db.session.add(order)
+        db.session.commit()
+
+        flash("Подарок %s добавлен" % order.name)
+
+        return redirect(url_for('main.order_list'))
 
     orders = Order.query.order_by(
         Order.name
@@ -38,13 +51,32 @@ def order_list():
         page, app.config['GROUPS_PER_PAGE'], False
     )
 
-    return render_template('data_list.html',
+    return render_template('data_list.html', form=form,
                            title='Список подарков', data=orders)
 
 
 @bp.route('/order/id/<order_id>', methods=['GET', 'POST'])
+@admin_required
 def order(order_id):
-    pass
+    current_order = Order.query.get(order_id)
+
+    return render_template('main/order_page.html', order=current_order)
+
+
+@bp.route('/order/remove/<order_id>')
+@admin_required
+def remove_order(order_id):
+    order = Order.query.get(order_id)
+
+    if order.records.count() > 0:
+        flash("Удаление подарка невозможно, т.к. у него есть заказы")
+        return redirect(url_for('main.order', order_id=order_id))
+
+    db.session.delete(order)
+    db.session.commit()
+    flash('Подарок удален')
+
+    return redirect(url_for('main.order_list'))
 
 
 @bp.route('/group/list', methods=['GET', 'POST'])
@@ -239,3 +271,35 @@ def order_table(student_id):
     return render_template('main/table.html', form=form,
                            student=current_student, title=current_student.username,
                            records=records, type=OrderRecord)
+
+
+@bp.route('/table/orders/by_set/done/<order_id>')
+@login_required
+def done_order_by_set(order_id):
+    order = Order.query.get(order_id)
+
+    page = request.args.get('page', 1, type=int)
+    records = OrderRecord.query.filter_by(order_id=order_id, status_id=OrderStatus.Done)
+    records = records.paginate(
+        page, app.config['RECORDS_PER_PAGE'], False
+    )
+
+    return render_template('main/table.html', title=order.name,
+                           records=records.items, type=OrderRecord,
+                           page=records.page, pages=records.pages)
+
+
+@bp.route('/table/orders/by_set/ordered/<order_id>')
+@login_required
+def ordered_order_by_set(order_id):
+    order = Order.query.get(order_id)
+
+    page = request.args.get('page', 1, type=int)
+    records = OrderRecord.query.filter_by(order_id=order_id, status_id=OrderStatus.Ordered)
+    records = records.paginate(
+        page, app.config['RECORDS_PER_PAGE'], False
+    )
+
+    return render_template('main/table.html', title=order.name,
+                           records=records.items, type=OrderRecord,
+                           page=records.page, pages=records.pages)
