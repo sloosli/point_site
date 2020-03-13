@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, SubmitField, SelectField
+from wtforms import StringField, IntegerField, SubmitField, SelectField, RadioField
 from wtforms.validators import ValidationError, DataRequired
 from app.models import Group, Discipline, ReferPointRecord, Order, OrderRecord
 
@@ -8,7 +8,7 @@ class GroupForm(FlaskForm):
     name = StringField('Название', validators=[DataRequired()])
     disciplines = SelectField('Предмет', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Добавить')
-
+RadioField
     def __init__(self, group_name='', *args, **kwargs):
         super(GroupForm, self).__init__(*args, **kwargs)
         self.group_name = group_name
@@ -79,3 +79,15 @@ class OrderRecordForm(FlaskForm):
                                for t in Order.query.filter(
                 Order.id.notin_(busy_orders)
             ).order_by(Order.id).all()]
+
+
+class OrderForm(FlaskForm):
+    name = StringField('Название подарка', validators=[DataRequired()])
+    cost = IntegerField('Стоимость', validators=[DataRequired()])
+    description = StringField('Описание')
+    type = RadioField('Тип', choices=[(1, 'Набор'), (2, 'Скидка')])
+
+    def validate_name(self, name):
+        order = Order.query.filter_by(name=name).first()
+        if order is not None:
+            raise ValidationError("Подарок с таким названием уже существует")
