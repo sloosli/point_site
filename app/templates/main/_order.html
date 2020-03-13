@@ -1,0 +1,22 @@
+{% macro render(order) %}
+<div class="col-xs-6 col-md-3">
+    <div class="well bs-component">
+        <div class="card">
+            <div class="card-body">
+                <h4>
+                    <a href="{{ url_for('main.order', order_id=order.id) }}">
+                        {{ order.name }}
+                    </a>
+                </h4>
+                <h5>Тип: {{ order.type }}</h5>
+                {% if order.desc %}
+                <h5>
+                    Описание: {{ order.desc }}
+                </h5>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

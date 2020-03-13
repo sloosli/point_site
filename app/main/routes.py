@@ -26,7 +26,28 @@ def index():
     return redirect(url_for('students.list'))
 
 
-@bp.route('/group_list', methods=['GET', 'POST'])
+@admin_required
+@bp.route('/order/list', methods=['GET','POST'])
+def order_list():
+    page = request.args.get('page', 1, type=int)
+
+    orders = Order.query.order_by(
+        Order.name
+    )
+    orders = orders.paginate(
+        page, app.config['GROUPS_PER_PAGE'], False
+    )
+
+    return render_template('data_list.html',
+                           title='Список подарков', data=orders)
+
+
+@bp.route('/order/id/<order_id>', methods=['GET', 'POST'])
+def order(order_id):
+    pass
+
+
+@bp.route('/group/list', methods=['GET', 'POST'])
 @login_required
 def group_list():
     if current_user.access_level == Access.HAWK:

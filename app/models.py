@@ -236,3 +236,11 @@ class Order(db.Model):
     type_id = db.Column(db.Integer)
 
     records = db.relationship('OrderRecord', backref='order', lazy='dynamic')
+
+    @property
+    def type(self):
+        return ['Подарок', 'Скидка'][self.type_id - 1]
+
+    def to_html(self):
+        render = get_template_attribute('main/_order.html', 'render')
+        return render(self)
