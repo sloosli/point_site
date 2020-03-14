@@ -1,7 +1,7 @@
 from functools import wraps
 from flask import redirect, url_for, abort
 from flask_login import current_user
-from app.models import Mentor, Student, Group, DisciplinePointRecord
+from app.models import Mentor, Student, Group, DisciplinePointRecord, Theme
 from app.constants import Access
 
 
@@ -10,6 +10,16 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if current_user is None or current_user.is_anonymous or \
                 current_user.access_level not in [Access.ADMIN, Access.SUPER_ADMIN]:
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def angel_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if current_user is None or current_user.is_anonymous or \
+                current_user.access_level not in [Access.ANGEL, Access.ADMIN, Access.SUPER_ADMIN]:
             return redirect(url_for('main.index'))
         return f(*args, **kwargs)
     return decorated_function
@@ -46,7 +56,8 @@ def get_discipline_records(student):
 
     discipline_records = student.discipline_records
     if current_user.access_level in [Access.MENTOR, Access.UP_MENTOR]:
+        theme_ids = current_user.discipline.themes.with_entities(Theme.id)
         discipline_records.filter(
-            DisciplinePointRecord.theme_id(current_user.discipline.themes))
+            DisciplinePointRecord.theme_id.in_(theme_ids))
 
     return discipline_records

@@ -1,5 +1,6 @@
 from flask import render_template, flash, redirect, url_for, g, request
 from flask_login import current_user, login_required
+from werkzeug.urls import url_parse
 from app import app, db
 from app.models import (Group, Theme, DisciplinePointRecord, ReferPointRecord,
                         OrderRecord, Order)
@@ -7,7 +8,7 @@ from app.main import bp
 from app.main.forms import (GroupForm, ChangeGroupForm, DisciplineRecordForm,
                             ReferRecordForm, OrderRecordForm, OrderForm)
 from app.constants import Access, navs, OrderStatus
-from app.utils import (admin_required, get_group, get_student, is_admin,
+from app.utils import (admin_required, angel_required, get_group, get_student, is_admin,
                        get_discipline_records)
 
 
@@ -27,9 +28,19 @@ def index():
 
 
 @bp.route('/order/list', methods=['GET', 'POST'])
-@admin_required
+@angel_required
 def order_list():
     page = request.args.get('page', 1, type=int)
+
+    orders = Order.query.order_by(
+        Order.name
+    )
+    orders = orders.paginate(
+        page, app.config['GROUPS_PER_PAGE'], False
+    )
+    if current_user.access_level == Access.ANGEL:
+        return render_template('data_list.html',
+                               title='Список подарков', data=orders)
 
     form = OrderForm()
     if form.validate_on_submit():
@@ -44,19 +55,12 @@ def order_list():
 
         return redirect(url_for('main.order_list'))
 
-    orders = Order.query.order_by(
-        Order.name
-    )
-    orders = orders.paginate(
-        page, app.config['GROUPS_PER_PAGE'], False
-    )
-
     return render_template('data_list.html', form=form,
                            title='Список подарков', data=orders)
 
 
 @bp.route('/order/id/<order_id>', methods=['GET', 'POST'])
-@admin_required
+@angel_required
 def order(order_id):
     current_order = Order.query.get(order_id)
 
@@ -206,8 +210,10 @@ def disc_table(student_id):
         return redirect(url_for('main.disc_table', student_id=student_id))
 
     return render_template('main/table.html', form=form,
-                           student=current_student, title=current_student.username,
-                           records=records, type=DisciplinePointRecord)
+                           student=current_student, title="Баллы за учебу",
+                           records=records, type=DisciplinePointRecord,
+                           back=[url_for('students.student', student_id=student_id),
+                                 current_student.username])
 
 
 @bp.route('/table/referal/<student_id>', methods=['GET', 'POST'])
@@ -235,8 +241,10 @@ def refer_table(student_id):
         return redirect(url_for('main.refer_table', student_id=student_id))
 
     return render_template('main/table.html', form=form,
-                           student=current_student, title=current_student.username,
-                           records=records, type=ReferPointRecord)
+                           student=current_student, title="Баллы за приглашения",
+                           records=records, type=ReferPointRecord,
+                           back=[url_for('students.student', student_id=student_id),
+                                 current_student.username])
 
 
 @bp.route('/table/orders/<student_id>', methods=['GET', 'POST'])
@@ -269,13 +277,19 @@ def order_table(student_id):
         return redirect(url_for('main.order_table', student_id=student_id))
 
     return render_template('main/table.html', form=form,
-                           student=current_student, title=current_student.username,
-                           records=records, type=OrderRecord)
+                           student=current_student, title="Заказы",
+                           records=records, type=OrderRecord,
+                           back=[url_for('students.student', student_id=student_id),
+                                 current_student.username])
 
 
 @bp.route('/table/orders/by_set/done/<order_id>')
 @login_required
 def done_order_by_set(order_id):
+    if current_user.access_level < Access.ANGEL:
+        flash("У вас недостаточно прав для просмота данной страницы")
+        return redirect(url_for('main.index'))
+
     order = Order.query.get(order_id)
 
     page = request.args.get('page', 1, type=int)
@@ -292,6 +306,10 @@ def done_order_by_set(order_id):
 @bp.route('/table/orders/by_set/ordered/<order_id>')
 @login_required
 def ordered_order_by_set(order_id):
+    if current_user.access_level < Access.ANGEL:
+        flash("У вас недостаточно прав для просмота данной страницы")
+        return redirect(url_for('main.index'))
+
     order = Order.query.get(order_id)
 
     page = request.args.get('page', 1, type=int)
@@ -303,3 +321,60 @@ def ordered_order_by_set(order_id):
     return render_template('main/table.html', title=order.name,
                            records=records.items, type=OrderRecord,
                            page=records.page, pages=records.pages)
+
+
+@bp.route('/order_record/set_done/<record_id>')
+@angel_required
+def set_order_done(record_id):
+    record = OrderRecord.query.get(record_id)
+    record.status = OrderStatus.Done
+
+    return "ok"
+
+
+@bp.route('/order_record/delete/<record_id>')
+@admin_required
+def delete_order_record(record_id):
+    record = OrderRecord.query.get(record_id)
+    student_id = record.student_id
+
+    db.session.delete(record)
+    db.session.commit()
+
+    flash("Заказ успешно удален")
+    next_page = request.args.get('next')
+    if not next_page or url_parse(next_page).netloc != '':
+        next_page = url_for('students.student', student_id=student_id)
+    return redirect(next_page)
+
+
+@bp.route('/discipline_record/delete/<record_id>')
+@admin_required
+def delete_discipline_record(record_id):
+    record = DisciplinePointRecord.query.get(record_id)
+    student_id = record.student_id
+
+    db.session.delete(record)
+    db.session.commit()
+
+    flash("Запись успешно удалена")
+    next_page = request.args.get('next')
+    if not next_page or url_parse(next_page).netloc != '':
+        next_page = url_for('main.disc_table', student_id=student_id)
+    return redirect(next_page)
+
+
+@bp.route('/refer_record/delete/<record_id>')
+@admin_required
+def delete_refer_record(record_id):
+    record = ReferPointRecord.query.get(record_id)
+    student_id = record.student_id
+
+    db.session.delete(record)
+    db.session.commit()
+
+    flash("Запись успешно удалена")
+    next_page = request.args.get('next')
+    if not next_page or url_parse(next_page).netloc != '':
+        next_page = url_for('main.refer_table', student_id=student_id)
+    return redirect(next_page)

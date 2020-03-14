@@ -25,9 +25,11 @@
                     <li><a href="{{ url_for(nav.url) }}">{{ nav.name }}</a></li>
                 </ul>
                 {% endfor %}
+                {% if not current_user.is_anonymous %}
                 <ul class="nav navbar-nav">
                     <li><a href="{{ url_for('admins.self_mentor') }}">Мой профиль</a></li>
                 </ul>
+                {% endif %}
                 <ul class="nav navbar-nav navbar-right">
                     {% if current_user.is_anonymous %}
                     <li><a href="{{ url_for('auth.login') }}">Вход</a></li>

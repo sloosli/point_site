@@ -38,8 +38,8 @@ navs = {
     Access.UP_MENTOR: [groups],
     Access.HAWK: [students],
     Access.ANGEL: [groups, students, orders],
-    Access.ADMIN: [groups, students, mentors, disciplines, orders],
-    Access.SUPER_ADMIN: [groups, students, mentors, disciplines, orders]
+    Access.ADMIN: [groups, students, disciplines, orders, mentors],
+    Access.SUPER_ADMIN: [groups, students, disciplines, orders, mentors]
 }
 
 # Сообщества

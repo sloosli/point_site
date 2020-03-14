@@ -54,22 +54,22 @@
 
 <div class="well bs-component">
     <h4>Всего баллов: {{ student.total_points() }}</h4>
-    {% if current_user.access_level != 3%}
     <h4>Баллы за предметы: {{ student.discipline_points() }}
+    {% if current_user.access_level != 3%}
         <a href="{{ url_for('main.disc_table', student_id=student.id) }}">Таблица</a>
-    </h4>
     {% endif %}
+    </h4>
 
-    {% if current_user.access_level not in [1, 2]%}
     <h4>Баллы за приглашения: {{ student.refer_points() }}
+    {% if current_user.access_level not in [1, 2]%}
         <a href="{{ url_for('main.refer_table', student_id=student.id) }}">Таблица</a>
-    </h4>
     {% endif%}
-    {% if current_user.access_level > 3 %}
+    </h4>
     <h4>Потраченные баллы: {{ student.orders_cost() }}
+    {% if current_user.access_level > 3 %}
         <a href="{{ url_for('main.order_table', student_id=student.id) }}">Таблица</a>
-    </h4>
     {% endif%}
+    </h4>
 </div>
 
 {% if current_user.access_level > 3 and student.order_records.count() > 0%}

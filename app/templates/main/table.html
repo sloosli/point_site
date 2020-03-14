@@ -5,6 +5,10 @@
 {% block app_content %}
 {% if form %}
 <div class="well bs-component">
+    {% if back %}
+    <a href="{{ back[0] }}"><h4>{{ back[1] }}</h4></a>
+    <br>
+    {% endif %}
     <a class="btn btn-primary" role="button" data-toggle="collapse" href="#collapseForm" aria-expanded="false"
        aria-controls="collapseForm">
         Редактирование
@@ -15,12 +19,20 @@
     </div>
 </div>
 {% endif %}
-<div class="well bs-component">
+<div class="well">
     <table class="table table-striped">
         {{ type.to_header() }}
+        {% if current_user.is_admin() %}
+            <th></th>
+        {% endif %}
+        </tr>
+        </thead>
         <tbody>
         {% for record in records %}
             {{ record.to_row() }}
+            {% if current_user.is_admin() %}<td><a href="{{record.delete_route()}}">
+            <button>Удалить</button></a></td>{% endif %}
+        </tr>
         {% endfor %}
         </tbody>
     </table>

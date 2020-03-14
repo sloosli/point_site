@@ -93,7 +93,8 @@ class GroupMentorForm(FlaskForm):
         group_ids = user.groups.with_entities(Group.id)
         self.groups.choices = [(t.id, t.name) for t in
                                Group.query.filter(
-                                   Group.id.notin_(group_ids)
+                                   Group.id.notin_(group_ids),
+                                   Group.discipline_id == user.discipline_id
                                ).all()]
 
     def validate_groups(self, groups):

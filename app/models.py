@@ -1,9 +1,9 @@
 from datetime import datetime
-from flask import get_template_attribute
+from flask import get_template_attribute, url_for
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login
-from app.constants import access_desc, default_message, Orders
+from app.constants import Access, access_desc, default_message, Orders
 
 
 group_mentors = db.Table(
@@ -46,6 +46,9 @@ class Mentor(UserMixin, db.Model):
     def to_html(self):
         render = get_template_attribute('admins/_mentor.html', 'render')
         return render(self)
+
+    def is_admin(self):
+        return self.access_level in [Access.ADMIN, Access.SUPER_ADMIN]
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -163,6 +166,9 @@ class DisciplinePointRecord(db.Model):
     theme_id = db.Column(db.Integer, db.ForeignKey('theme.id'))
     mentor_id = db.Column(db.Integer, db.ForeignKey('mentor.id'))
 
+    def delete_route(self):
+        return url_for('main.delete_discipline_record', record_id=self.id)
+
     @staticmethod
     def to_header():
         render = get_template_attribute('main/_discipline_records.html', 'header')
@@ -181,6 +187,9 @@ class ReferPointRecord(db.Model):
 
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'))
     mentor_id = db.Column(db.Integer, db.ForeignKey('mentor.id'))
+
+    def delete_route(self):
+        return url_for('main.delete_refer_record', record_id=self.id)
 
     @staticmethod
     def to_header():
@@ -217,6 +226,9 @@ class OrderRecord(db.Model):
     @property
     def status(self):
         return Orders.status(self.order.type_id, self.status_id)
+
+    def delete_route(self):
+        return url_for('main.delete_order_record', record_id=self.id)
 
     @staticmethod
     def to_header():

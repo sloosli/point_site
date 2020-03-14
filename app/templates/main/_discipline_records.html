@@ -7,8 +7,6 @@
     <th>Баллы</th>
     <th>Дата</th>
     <th>Ментор</th>
-</tr>
-</thead>
 {% endmacro %}
 
 
@@ -19,5 +17,4 @@
     <td>{{ record.amount }}</td>
     <td>{{ record.timestamp.date() }}</td>
     <td>{{ record.mentor.last_name }} {{ record.mentor.first_name }}</td>
-</tr>
 {% endmacro %}
