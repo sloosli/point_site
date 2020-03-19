@@ -14,4 +14,6 @@ class Config(object):
     STUDENTS_PER_PAGE = 12
     RECORDS_PER_PAGE = 20
 
+    BOT_URL = "bonus-point-site.herokuapp.com/communities/bot"
+
     VK_SERVICE_KEY = '436dda3f436dda3f436dda3f9c431dc2a74436d436dda3f1d0d98e3aee65cafefd50e11'

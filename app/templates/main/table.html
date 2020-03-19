@@ -30,8 +30,10 @@
         <tbody>
         {% for record in records %}
             {{ record.to_row() }}
-            {% if current_user.is_admin() %}<td><a href="{{record.delete_route()}}">
-            <button>Удалить</button></a></td>{% endif %}
+            {% if current_user.is_admin() and record.status_id != 3%}
+                <td><a href="{{record.delete_route()}}">
+                <button>Удалить</button></a></td>
+            {% endif %}
         </tr>
         {% endfor %}
         </tbody>

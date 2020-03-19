@@ -1,8 +1,12 @@
-from flask import request
+import secrets
+from flask import request, redirect, url_for, render_template, flash, g
 import vk_api
 from vk_api.utils import get_random_id
+from app import app, db
 from app.models import VkGroup, Student
 from app.communities import bp
+from app.communities.forms import VkGroupform
+from app.utils import admin_required
 
 
 # Адрес для запроса боту
@@ -43,3 +47,41 @@ def bot():
             )
 
     return 'ok'
+
+
+@bp.route('/list', methods=['GET', 'POST'])
+@admin_required
+def list():
+    data = VkGroup.query.order_by(VkGroup.name)
+
+    form = VkGroupform()
+    page = request.args.get('page', 1, type=int)
+
+    if form.validate_on_submit():
+        vk_session = vk_api.VkApi()
+        vk = vk_session.get_api()
+
+        id = form.vk_id.data
+        token = form.token.data
+        confirm = vk.groups.getCallbackConfirmationCode(group_id=id)
+        name = vk.groups.getById(group_id=id)[0]['name']
+        secret_key = secrets.token_hex(32)
+
+        group = VkGroup(id=id, name=name, token=token,
+                        confirmation_key=confirm, secret_key=secret_key)
+        db.session.add(group)
+        db.session.commit()
+
+        vk.groups.addCallbackServer(group_id=id, title="Point Site", secret_key=secret_key,
+                                    url=app.config['BOT_URL'])
+
+        flash('Группа %s добавлена' % group.name)
+        return redirect(url_for('admins.index', page=page))
+
+    data = VkGroup.query.order_by(VkGroup.name).paginate(
+        page, 20, False
+    )
+    g.url_for = 'communities.list'
+
+    return render_template('data_list.html', form=form,
+                           data=data, title='Список сообществ')

@@ -327,9 +327,16 @@ def ordered_order_by_set(order_id):
 @angel_required
 def set_order_done(record_id):
     record = OrderRecord.query.get(record_id)
-    record.status = OrderStatus.Done
+    if record.status_id == 3:
+        return "not ok", 500
+    student_id = record.student_id
+    record.status_id = OrderStatus.Done
+    db.session.commit()
 
-    return "ok"
+    next_page = request.args.get('next')
+    if not next_page or url_parse(next_page).netloc != '':
+        next_page = url_for('students.student', student_id=student_id)
+    return redirect(next_page)
 
 
 @bp.route('/order_record/delete/<record_id>')

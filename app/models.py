@@ -203,6 +203,7 @@ class ReferPointRecord(db.Model):
 
 class VkGroup(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(128))
     token = db.Column(db.String(128))
     confirmation_key = db.Column(db.String(32))
     secret_key = db.Column(db.String(64))
@@ -211,6 +212,10 @@ class VkGroup(db.Model):
     def answer(self, student):
         message = self.message
         return message.format(username=student.username, points=student.total_points())
+
+    def to_html(self):
+        render = get_template_attribute('communities/_community.html', 'render')
+        return render(self)
 
 
 class OrderRecord(db.Model):

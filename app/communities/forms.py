@@ -5,4 +5,6 @@ from app.models import VkGroup
 
 
 class VkGroupform(FlaskForm):
-    pass
+    token = StringField('Токен', validators=[DataRequired()])
+    vk_id = IntegerField('Id вконтакте', validators=[DataRequired()])
+    submit = SubmitField('Добавить')

@@ -1,0 +1,14 @@
+{% macro render(group) %}
+
+<div class="col-xs-12 col-md-12 ">
+<div class="well bs-component">
+    <div class="card">
+        <h4 class="card-title">
+                {{ group.name }}
+        </h4>
+        <h5><a href="https://vk.com/public{{ group.id }}">Вконтакте</a> </h5>
+    </div>
+</div>
+</div>
+
+{% endmacro %}
