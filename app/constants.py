@@ -32,14 +32,15 @@ groups = Nav('Группы', 'main.group_list')
 mentors = Nav('Менторы', 'admins.index')
 disciplines = Nav('Предметы', 'disciplines.index')
 orders = Nav('Подарки', 'main.order_list')
+communities = Nav('Сообщества', 'communities.list')
 
 navs = {
     Access.MENTOR: [groups],
     Access.UP_MENTOR: [groups],
     Access.HAWK: [students],
     Access.ANGEL: [groups, students, orders],
-    Access.ADMIN: [groups, students, disciplines, orders, mentors],
-    Access.SUPER_ADMIN: [groups, students, disciplines, orders, mentors]
+    Access.ADMIN: [groups, students, disciplines, orders, mentors, communities],
+    Access.SUPER_ADMIN: [groups, students, disciplines, orders, mentors, communities]
 }
 
 # Сообщества

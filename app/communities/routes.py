@@ -5,7 +5,7 @@ from vk_api.utils import get_random_id
 from app import app, db
 from app.models import VkGroup, Student
 from app.communities import bp
-from app.communities.forms import VkGroupform
+from app.communities.forms import VkGroupForm, VkGroupChangeForm
 from app.utils import admin_required
 
 
@@ -34,7 +34,7 @@ def bot():
         student = Student.query.filter_by(vk_id=from_id).first()
         if student is None:
             vk.messages.send(
-                message='Ты не являешься нашим учеником(',
+                message='К сожалению, ты не являешься нашим учеником',
                 random_id=get_random_id(),
                 peer_id=from_id
             )
@@ -54,7 +54,7 @@ def bot():
 def list():
     data = VkGroup.query.order_by(VkGroup.name)
 
-    form = VkGroupform()
+    form = VkGroupForm()
     page = request.args.get('page', 1, type=int)
 
     if form.validate_on_submit():
@@ -85,3 +85,28 @@ def list():
 
     return render_template('data_list.html', form=form,
                            data=data, title='Список сообществ')
+
+
+@bp.route('/page/<group_id>', methods=['GET', 'POST'])
+def page(group_id):
+    group = VkGroup.query.get(group_id)
+    form = VkGroupChangeForm(group.message)
+
+    if form.validate_on_submit():
+        group.message = form.message.data
+
+        db.session.commit()
+
+        return redirect(url_for('communities.page', group_id=group_id))
+
+    return render_template('communities/community_page.html', group=group,
+                           form=form, title=group.name)
+
+
+@bp.route('/remove/<group_id>')
+def delete(group_id):
+    group = VkGroup.query.get(group_id)
+    db.session.delete(group)
+    db.session.commit()
+
+    return redirect(url_for('communities.list'))

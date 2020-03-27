@@ -4,9 +4,9 @@
 {% block app_content %}
 
 <div class="row">
-    <h4>
-        {{ discipline.name }}
-    </h4>
+    <h3>
+        {{ group.name }}
+    </h3>
     <!-- Триггер для всплывающего окна-->
     <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal">
         Удалить
@@ -24,12 +24,12 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    Вы уверены, что хотите удалить ПРЕДМЕТ - {{ discipline.name }}
+                    Вы уверены, что хотите удалить сообщество - {{ group.name }}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
                     <a class="btn btn-danger"
-                       href="{{ url_for('disciplines.remove_discipline', discipline_id=discipline.id) }}">Удалить</a>
+                       href="{{ url_for('communities.delete', group_id=group.id) }}">Удалить</a>
                 </div>
             </div>
         </div>
@@ -37,24 +37,13 @@
     <p></p>
     {% if form %}
     <div class="well bs-component">
+        <a href="https://vk.com/public{{ group.id }}"><h4>Вконтакте</h4></a>
         <form action="" method="post" class="form" role="form">
-            <h4>Добавить тему</h4>
             {% include '_form.html' %}
         </form>
     </div>
     {% endif %}
-    {% if discipline.themes.count() > 0 %}
-    <div class="well bs-component">
-        <h3>Темы:</h3>
-        <ul>
-            {% for theme in discipline.themes %}
-            <li>
-                <h4>{{ theme.name }} - макс. {{ theme.max_points }}</h4>
-            </li>
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
+
 </div>
 
 
