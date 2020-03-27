@@ -71,15 +71,17 @@ def list():
         group = VkGroup(id=id, name=name, token=token,
                         confirmation_key=confirm, secret_key=secret_key)
 
-        vk.groups.addCallbackServer(group_id=id, title="Point Site", secret_key=secret_key,
-                                    url=app.config['BOT_URL'])
+        server_id = vk.groups.addCallbackServer(group_id=id, title="Point Site", secret_key=secret_key,
+                                                url=app.config['BOT_URL'])
+
+        vk.groups.setCallbackSettings(group_id=group.id, server_id=server_id['server_id'],
+                                      message_new=1)
 
         db.session.add(group)
         db.session.commit()
 
-
         flash('Группа %s добавлена' % group.name)
-        return redirect(url_for('admins.index', page=page))
+        return redirect(url_for('communities.list', page=page))
 
     data = VkGroup.query.order_by(VkGroup.name).paginate(
         page, 20, False
