@@ -58,14 +58,15 @@ def list():
     page = request.args.get('page', 1, type=int)
 
     if form.validate_on_submit():
-        vk_session = vk_api.VkApi()
+        token = form.token.data
+
+        vk_session = vk_api.VkApi(token=token)
         vk = vk_session.get_api()
 
         id = form.vk_id.data
-        token = form.token.data
-        confirm = vk.groups.getCallbackConfirmationCode(group_id=id)
+        confirm = vk.groups.getCallbackConfirmationCode(group_id=id)['code']
         name = vk.groups.getById(group_id=id)[0]['name']
-        secret_key = secrets.token_hex(32)
+        secret_key = secrets.token_hex(24)
 
         group = VkGroup(id=id, name=name, token=token,
                         confirmation_key=confirm, secret_key=secret_key)
