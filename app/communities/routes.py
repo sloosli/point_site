@@ -70,11 +70,13 @@ def list():
 
         group = VkGroup(id=id, name=name, token=token,
                         confirmation_key=confirm, secret_key=secret_key)
-        db.session.add(group)
-        db.session.commit()
 
         vk.groups.addCallbackServer(group_id=id, title="Point Site", secret_key=secret_key,
                                     url=app.config['BOT_URL'])
+
+        db.session.add(group)
+        db.session.commit()
+
 
         flash('Группа %s добавлена' % group.name)
         return redirect(url_for('admins.index', page=page))
