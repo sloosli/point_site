@@ -19,9 +19,14 @@
     <td>{{ record.timestamp.date() }}</td>
     <td>{{ record.commentary }}</td>
     <td><p>{{ record.status }}</p>
+        {% if record.status_id == 1 %}
+        <p><a href="{{ url_for('main.set_order_done', record_id=record.id) }}">
+            <button>{{ 'Отправлен' if record.order.type_id == 1 else 'Отправлена' }}</button></a>
+        </p>
+        {% endif %}
         {% if record.status_id == 2 %}
         <p><a href="{{ url_for('main.set_order_done', record_id=record.id) }}">
-            <button>{{ 'Отправлен' if record.order.type_id == 1 else 'Использована' }}</button></a>
+            <button>{{ 'Получен' if record.order.type_id == 1 else 'Использована' }}</button></a>
         </p>
         {% endif %}
     </td>

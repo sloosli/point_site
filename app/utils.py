@@ -1,6 +1,8 @@
 from functools import wraps
-from flask import redirect, url_for, abort
+from flask import redirect, url_for, abort, flash
 from flask_login import current_user
+import vk_api
+from app import app
 from app.models import Mentor, Student, Group, DisciplinePointRecord, Theme
 from app.constants import Access
 
@@ -61,3 +63,17 @@ def get_discipline_records(student):
             DisciplinePointRecord.theme_id.in_(theme_ids))
 
     return discipline_records
+
+
+def get_vk_users_data(r_form):
+
+    try:
+        ids = [int(i) for i in r_form['id_list'].replace(',', ' ').split()]
+    except ValueError:
+        None
+
+    vk_session = vk_api.VkApi(token=app.config['VK_SERVICE_KEY'])
+    vk = vk_session.get_api()
+
+    users = vk.users.get(user_ids=ids, lang='ru')
+    return users

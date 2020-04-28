@@ -36,7 +36,7 @@ communities = Nav('Сообщества', 'communities.list')
 
 navs = {
     Access.MENTOR: [groups],
-    Access.UP_MENTOR: [groups],
+    Access.UP_MENTOR: [groups, mentors],
     Access.HAWK: [students],
     Access.ANGEL: [groups, students, orders],
     Access.ADMIN: [groups, students, disciplines, orders, mentors, communities],
@@ -52,8 +52,8 @@ class Orders:
     Set = 1
     Discount = 2
 
-    _desc = [["Не заказано", "В ожидании отправки", "Отправлено"],
-             ["Не заказана", "Заказана", "Использована"]]
+    _desc = [["Не отправлен", "Отправлен", "Получен"],
+             ["Не отправлена", "Отправлена", "Использована"]]
 
     @classmethod
     def status(cls, type_id, status_id):
@@ -61,6 +61,6 @@ class Orders:
 
 
 class OrderStatus:
-    NotOrdered = 1
-    Ordered = 2
+    Ordered = 1
+    Sent = 2
     Done = 3

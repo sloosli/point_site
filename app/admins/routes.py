@@ -1,5 +1,5 @@
 from flask import render_template, flash, redirect, url_for, request, g
-from flask_login import current_user
+from flask_login import current_user, login_required
 from app import app, db
 from app.models import Mentor, Group
 from app.admins import bp
@@ -10,9 +10,12 @@ from app.utils import get_mentor, admin_required
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/list', methods=['GET', 'POST'])
-@admin_required
+@login_required
 def index():
-    form = MentorForm(current_user.access_level)
+    if current_user.access_level != Access.UP_MENTOR and \
+            current_user.access_level < 5:
+        return redirect(url_for('main.index'))
+    form = MentorForm(current_user)
     page = request.args.get('page', 1, type=int)
 
     if form.validate_on_submit():
@@ -33,7 +36,12 @@ def index():
     data = Mentor.query.filter(
         # Администраторов может добавлять только главный администратор
         Mentor.access_level < current_user.access_level
-    ).order_by(
+    )
+
+    if current_user.access_level == Access.UP_MENTOR:
+        data = data.filter(Mentor.discipline_id == current_user.discipline_id)
+
+    data = data.order_by(
         Mentor.access_level.desc(), Mentor.last_name, Mentor.first_name, Mentor.username
     ).paginate(
         page, app.config['MENTORS_PER_PAGE'], False
@@ -52,6 +60,7 @@ def self_mentor():
 @bp.route('/user/<username>', methods=['GET', 'POST'])
 def mentor(username):
     if username != current_user.username and \
+            current_user.access_level != Access.UP_MENTOR and\
             current_user.access_level not in [Access.ADMIN, Access.SUPER_ADMIN]:
         return redirect(url_for('main.index'))
 
@@ -60,7 +69,9 @@ def mentor(username):
     if user.id == current_user.id:
         form = ChangeSelfForm(user=user)
     else:
-        form = ChangeMentorForm(current_access=current_user.access_level,
+        if current_user.access_level <= user.access_level:
+            return redirect(url_for('main.index'))
+        form = ChangeMentorForm(current_user=current_user,
                                 user=user)
 
     group_form = None
@@ -112,7 +123,7 @@ def mentor(username):
 def remove_mentor(username):
     user = get_mentor(username)
 
-    if user.id != current_user.id:
+    if user.id != current_user.id and current_user.access_level > user.access_level:
         db.session.delete(user)
         db.session.commit()
 

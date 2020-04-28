@@ -6,7 +6,7 @@ from app import app, db
 from app.students import bp
 from app.students.forms import StudentForm, ChangeStudentForm, GroupStudentForm
 from app.constants import Access
-from app.utils import admin_required, get_student, is_admin
+from app.utils import admin_required, get_student, is_admin, get_vk_users_data
 from app.models import Student, Group
 
 
@@ -19,7 +19,7 @@ def list():
     page = request.args.get('page', 1, type=int)
     form = None
     r_form = request.form
-    if is_admin(current_user):
+    if current_user.access_level > 3:
         form = StudentForm()
         if r_form.get('submit', None) and form.validate_on_submit():
             # noinspection PyArgumentList
@@ -98,17 +98,11 @@ def student(student_id):
 def multiple_add():
     r_form = request.form
 
-    try:
-        ids = [int(i) for i in r_form['id_list'].replace(',', ' ').split()]
-    except ValueError:
-        flash('Допустимы только id')
+    users = get_vk_users_data(r_form)
+    if users is None:
+        flash('Проверьте правильность id')
         return redirect(url_for('students.list'))
 
-    vk_session = vk_api.VkApi(token=app.config['VK_SERVICE_KEY'])
-    vk = vk_session.get_api()
-
-    users = vk.users.get(user_ids=ids, lang='ru')
-    flash_message = ''
     for user in users:
         student = Student.query.filter_by(vk_id=user['id']).first()
         if student is not None:

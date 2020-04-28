@@ -2,14 +2,14 @@ from flask import render_template, flash, redirect, url_for, g, request
 from flask_login import current_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
-from app.models import (Group, Theme, DisciplinePointRecord, ReferPointRecord,
+from app.models import (Student, Group, Theme, DisciplinePointRecord, ReferPointRecord,
                         OrderRecord, Order)
 from app.main import bp
 from app.main.forms import (GroupForm, ChangeGroupForm, DisciplineRecordForm,
                             ReferRecordForm, OrderRecordForm, OrderForm)
 from app.constants import Access, navs, OrderStatus
 from app.utils import (admin_required, angel_required, get_group, get_student, is_admin,
-                       get_discipline_records)
+                       get_discipline_records, get_vk_users_data)
 
 
 @bp.before_app_request
@@ -156,6 +156,45 @@ def remove_group(group_id):
     return redirect(url_for('main.group_list'))
 
 
+@bp.route('/group/id/<group_id>/add_multiple', methods=['POST'])
+@login_required
+def group_add_students(group_id):
+    r_form = request.form
+
+    users = get_vk_users_data(r_form)
+    students = []
+    for user in users:
+        student = Student.query.filter_by(vk_id=user['id']).first()
+        if student is None:
+            student = Student(first_name=user['first_name'],
+                              last_name=user['last_name'],
+                              vk_id=user['id'])
+            db.session.add(student)
+            flash("Студент %s vk_id: %i Добавлен в базу" % (student.username, student.vk_id))
+        students.append(student)
+
+    group = get_group(group_id)
+    for student in students:
+        if student.is_in_group(group):
+            flash("Студент %s vk_id: %i уже состоит в данной группе" % (student.username, student.vk_id))
+        else:
+            student.add_group(group)
+            flash("Студент %s vk_id: %i Добавлен в группу" % (student.username, student.vk_id))
+
+    db.session.commit()
+    return redirect(url_for('main.group', group_id=group_id))
+
+
+@bp.route('/group/id/<group_id>/remove/<student_id>')
+@login_required
+def remove_user(group_id, student_id):
+    group = get_group(group_id)
+    student = get_student(student_id)
+    student.remove_group(group)
+    db.session.commit()
+    return redirect(url_for('main.group', group_id=group_id))
+
+
 @bp.route('/table/discipline/<student_id>', methods=['GET', 'POST'])
 @login_required
 def disc_table(student_id):
@@ -197,12 +236,7 @@ def disc_table(student_id):
         new_rec = DisciplinePointRecord(theme_id=form.themes.data,
                                         mentor_id=current_user.id,
                                         student_id=current_student.id)
-        if form.amount.data <= 0 or form.amount.data is None or \
-                form.amount.data > theme.max_points:
-            new_rec.amount = theme.max_points
-        else:
-            new_rec.amount = form.amount.data
-
+        new_rec.amount = theme.max_points
         db.session.add(new_rec)
         db.session.commit()
 
@@ -231,7 +265,7 @@ def refer_table(student_id):
 
     if form.validate_on_submit():
         new_rec = ReferPointRecord(refer_vk_id=form.referal.data,
-                                   amount=form.amount.data,
+                                   amount=app.config['REFER_RECORD_POINTS'],
                                    student_id=current_student.id,
                                    mentor_id=current_user.id)
 

@@ -18,6 +18,7 @@
                         <th>Имя</th>
                         <th>Вконтакте</th>
                         <th>Баллы</th>
+                        <th>Добавить</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -30,6 +31,10 @@
                             vk.com/id{{ student.vk_id }}
                         </a></td>
                         <td>{{ student.total_points() }}</td>
+                        <td>
+                            <a href="{{ url_for('main.disc_table', student_id=student.id) }}"
+                            class="btn btn-primary" role="button">Таблица</a>
+                        </td>
                     </tr>
                     {% endfor %}
                     </tbody>

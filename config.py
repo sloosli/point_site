@@ -9,10 +9,12 @@ class Config(object):
                               'sqlite:///' + os.path.join(basedir, 'app.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    GROUPS_PER_PAGE = 4
-    MENTORS_PER_PAGE = 12
-    STUDENTS_PER_PAGE = 12
+    GROUPS_PER_PAGE = 10
+    MENTORS_PER_PAGE = 20
+    STUDENTS_PER_PAGE = 20
     RECORDS_PER_PAGE = 20
+
+    REFER_RECORD_POINTS = 100
 
     BOT_URL = "https://bonus-point-site.herokuapp.com/communities/bot"
 

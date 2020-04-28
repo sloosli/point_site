@@ -17,15 +17,19 @@ class MentorForm(FlaskForm):
     disciplines = SelectField('Предмет', coerce=int)
     submit = SubmitField('Добавить')
 
-    def __init__(self, current_access=0, original_username='', *args, **kwargs):
+    def __init__(self, current_user=None, original_username='', *args, **kwargs):
         super(MentorForm, self).__init__(*args, **kwargs)
 
         self.original_username = original_username
-        self.access_levels.choices = sorted(filter(lambda x: x[0] < current_access,
+        self.access_levels.choices = sorted(filter(lambda x: x[0] < \
+            current_user.access_level if current_user else 0,
                                             access_desc.items()))
 
         self.disciplines.choices = [(t.id, t.name)
                                     for t in Discipline.query.order_by(Discipline.name).all()]
+        if current_user and\
+                current_user.access_level == Access.UP_MENTOR:
+            self.disciplines.choices = [(current_user.discipline_id, current_user.discipline.name)]
 
     def validate_username(self, username):
         if username.data != self.original_username:
@@ -44,14 +48,14 @@ class ChangeMentorForm(MentorForm):
     password2 = PasswordField('Повторите пароль', validators=[EqualTo('password')])
     submit = SubmitField('Изменить')
 
-    def __init__(self, current_access, user, *args, **kwargs):
+    def __init__(self, current_user, user, *args, **kwargs):
         kwargs['first_name'] = user.first_name or 'Имя'
         kwargs['last_name'] = user.last_name or 'Фамилия'
         kwargs['username'] = user.username
         kwargs['access_levels'] = user.access_level
         kwargs['disciplines'] = user.discipline.id if user.discipline else None
 
-        super(ChangeMentorForm, self).__init__(current_access=current_access,
+        super(ChangeMentorForm, self).__init__(current_user=current_user,
                                                original_username=user.username,
                                                *args, **kwargs)
         self.password.label.text = 'Новый пароль'
